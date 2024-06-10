@@ -35,7 +35,7 @@ python -m pip install -e GroundingDINO
 
 이 때, visual studio 2019 'C++를 사용한 데스크톱 개발'이 설치돼있어야 GroundingDINO 의 dependency들을 설치할 수 있습니다. (2022버전으로는 잘 설치가 되지 않았습니다..)
 
-![alt text](image.png)
+![alt text](assets/image.png)
 
 <br>
 
@@ -68,7 +68,7 @@ CREATE TABLE items (id bigserial PRIMARY KEY, embedding vector(512));
 ## Run segment_and_insert_pgvector.ipynb
 cdn에 저장된 이미지들을 Grounded SAM으로 의상만 분할 후 CLIP encoder로 임베딩하여 pgvector에 저장하는 임시 파이프라인 코드입니다. 아직 cdn에 수집된 이미지가 없기 때문에 로컬에 저장된 이미지로 실행했습니다. 추후 cdn에서 이미지를 불러오고, 해당 이미지의 카테고리도 함께 가져오도록 수정되어야 합니다.
 
-![alt text](image-1.png)
+![alt text](assets/image-1.png)
 
 <br>
 
@@ -76,7 +76,7 @@ cdn에 저장된 이미지들을 Grounded SAM으로 의상만 분할 후 CLIP en
 
 사용자에게 이미지와 카테고리를 입력받아 Grounded SAM으로 분할 후 CLIP encoder로 임베딩 후, pgvector에 저장된 이미지 임베딩들과 가장 높은 cosine similarity를 갖는 상위 5개 벡터를 보여주는 임시 코드입니다.
 
-![alt text](image-3.png)
+![alt text](assets/image-3.png)
 
 ### output
 ```
