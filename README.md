@@ -33,7 +33,7 @@ python -m pip install -e GroundingDINO
 
 <br>
 
-이 때, visual studio 2019 'C++를 사용한 데스크톱 개발'이 설치돼있어야 GroundingDINO 의 dependency들을 설치할 수 있습니다. (2022버전으로는 잘 설치가 되지 않았습니다..)
+이 때, visual studio 2019 'C++를 사용한 데스크톱 개발'이 설치돼있어야 GroundingDINO 의 dependency들을 설치할 수 있습니다. (만약 2022 버전에서 설치가 안되면 2019 버전으로 재설치해서 시도하면 될 것 같습니다.)
 
 ![alt text](assets/image.png)
 
