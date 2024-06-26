@@ -49,7 +49,9 @@ async def process_image(image_upload: UploadFile = File(...), input_data: str = 
         logging.info(f"Processed image: Input data: {input_data}, Image features: {image_features_list}")
         
         # 유사한 이미지 검색 및 반환
-        similar_images = find_similar_images(image_feature)
+        similar_images = find_similar_images(image_features_list)
+        
+        logging.info(f"similar image:{similar_images}")
         
         return JSONResponse(content={"image_features": image_features_list, "similar_images": similar_images})
     
