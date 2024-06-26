@@ -64,7 +64,7 @@ sam = build_sam(checkpoint=sam_checkpoint)
 sam.to(device=DEVICE)
 sam_predictor = SamPredictor(sam)
 
-model, preprocess = clip.load('ViT-B/32', device=DEVICE)
+model, preprocess = clip.load('ViT-L/14', device=DEVICE)
 
 # grounding DINO로 box detection
 def detect(image, text_prompt, model, image_source, box_threshold = 0.3, text_threshold = 0.25):
