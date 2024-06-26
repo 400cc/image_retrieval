@@ -23,8 +23,8 @@ def find_similar_images(image_feature):
     
     # pg_similarity 모듈을 사용하여 유사한 이미지를 검색
     similarity_query = """
-        SELECT id, embedding <-> %s::vector AS distance
-        FROM items
+        SELECT cdn_url, embedding <-> %s::vector AS distance
+        FROM version4
         ORDER BY distance ASC
         LIMIT 5;
     """
