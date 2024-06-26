@@ -14,7 +14,7 @@ from GroundingDINO.groundingdino.models import build_model
 from GroundingDINO.groundingdino.util import box_ops
 from GroundingDINO.groundingdino.util.slconfig import SLConfig
 from GroundingDINO.groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
-from GroundingDINO.groundingdino.util.inference import annotate, load_image, load_image_from_url, predict
+from GroundingDINO.groundingdino.util.inference import annotate, load_image, load_image_from_memory, load_image_from_url, predict
 
 import supervision as sv
 
@@ -123,8 +123,30 @@ def SAM(prompt, image, image_source):
     masked_region_only = apply_mask_to_image(image_source, segmented_frame_masks[0][0])
     return masked_region_only, annotated_frame
 
+def process_image_and_feature_by_local(image_path, category):
+    image_source, image = load_image(image_path)
+    sam_image, _ = SAM(category, image, image_source)
+    sam_image_result = Image.fromarray(sam_image)
+    with torch.no_grad():
+        preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
+        image_features = model.encode_image(preprocessed_image)
+        image_feature = image_features[0]
+        
+    return sam_image_result, image_feature
+
 def process_image_and_feature(image_path, category):
     image_source, image = load_image_from_url(image_path)
+    sam_image, _ = SAM(category, image, image_source)
+    sam_image_result = Image.fromarray(sam_image)
+    with torch.no_grad():
+        preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
+        image_features = model.encode_image(preprocessed_image)
+        image_feature = image_features[0]
+        
+    return sam_image_result, image_feature
+
+def process_image_and_feature_by_app(image_path, category):
+    image_source, image = load_image_from_memory(image_path)
     sam_image, _ = SAM(category, image, image_source)
     sam_image_result = Image.fromarray(sam_image)
     with torch.no_grad():
