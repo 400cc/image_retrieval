@@ -7,8 +7,8 @@ import io
 import base64
 import logging
 
-from util.image_search import process_image_and_feature_by_app
-from util.pgvector_similarity import find_similar_images
+from util.extract_image_feture import process_image_and_feature_by_app
+from util.similarity_search import find_similar_images
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)  # 로그 레벨 설정 (INFO 이상만 출력)
@@ -31,7 +31,11 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post('/process_image')
-async def process_image(image_upload: UploadFile = File(...), input_data: str = Form(...)):
+async def process_image(
+    image_upload: UploadFile = File(...), 
+    input_data: str = Form(...),
+    top_num: int = Form(5)  # top_num 값을 폼 데이터에서 가져옴
+):
     # 파일 확장자 검사
     if not allowed_file(image_upload.filename):
         raise HTTPException(status_code=415, detail="Unsupported file format")
@@ -60,9 +64,9 @@ async def process_image(image_upload: UploadFile = File(...), input_data: str = 
         logging.info(f"Processed image: Input data: {input_data}, Image features: {image_features_list}")
         
         # 유사한 이미지 검색 및 반환
-        similar_images = find_similar_images(image_features_list)
+        similar_images = find_similar_images(image_features_list, top_num)
         
-        logging.info(f"similar image:{similar_images}")
+        logging.info(f"Similar images: {similar_images}")
         
         return JSONResponse(content={
             "original_image": original_image_base64,

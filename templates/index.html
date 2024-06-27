@@ -27,6 +27,8 @@
         <input type="file" id="image_upload" name="image_upload"><br>
         <label for="input_text">Input Text:</label><br>
         <input type="text" id="input_text" name="input_data"><br><br>
+        <label for="top_num">Number of Similar Images:</label><br>
+        <input type="number" id="top_num" name="top_num" value="5"><br><br>
         <input type="submit" value="Submit">
     </form>
 
@@ -51,6 +53,7 @@
             let formData = new FormData();
             formData.append('image_upload', document.getElementById('image_upload').files[0]);
             formData.append('input_data', document.getElementById('input_text').value);
+            formData.append('top_num', document.getElementById('top_num').value);
 
             fetch('/process_image', {
                 method: 'POST',
