@@ -9,6 +9,7 @@ import logging
 
 from util.image_search import process_image_and_feature_by_app
 from util.pgvector_similarity import find_similar_images
+
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)  # 로그 레벨 설정 (INFO 이상만 출력)
 
@@ -42,6 +43,16 @@ async def process_image(image_upload: UploadFile = File(...), input_data: str = 
         # 이미지 및 이미지 특징 처리
         segmented_image, image_feature = process_image_and_feature_by_app(image, input_data)
         
+        # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
+        original_image_byte_array = io.BytesIO()
+        segmented_image_byte_array = io.BytesIO()
+        
+        image.save(original_image_byte_array, format='PNG')
+        segmented_image.save(segmented_image_byte_array, format='PNG')
+        
+        original_image_base64 = base64.b64encode(original_image_byte_array.getvalue()).decode('utf-8')
+        segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
+        
         # 이미지 특징을 JSON 형태로 반환
         image_features_list = [feat.tolist() for feat in image_feature]
         
@@ -53,7 +64,12 @@ async def process_image(image_upload: UploadFile = File(...), input_data: str = 
         
         logging.info(f"similar image:{similar_images}")
         
-        return JSONResponse(content={"image_features": image_features_list, "similar_images": similar_images})
+        return JSONResponse(content={
+            "original_image": original_image_base64,
+            "segmented_image": segmented_image_base64,
+            "image_features": image_features_list,
+            "similar_images": similar_images
+        })
     
     except Exception as e:
         logging.error(f"Error processing image: {str(e)}")
