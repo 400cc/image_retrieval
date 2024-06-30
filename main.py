@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query, HTTPException
 from typing import List
 from pydantic import BaseModel
-from util.extract_image_feture import process_image_and_feature
+from util.extract_image_feature import process_image_and_feature
 app = FastAPI()
 
 class Image_url_category(BaseModel):

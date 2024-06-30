@@ -7,7 +7,7 @@ import io
 import base64
 import logging
 
-from util.extract_image_feture import process_image_and_feature_by_app
+from util.extract_image_feature import process_image_and_feature_by_app
 from util.similarity_search import find_similar_images
 
 # 로깅 설정
