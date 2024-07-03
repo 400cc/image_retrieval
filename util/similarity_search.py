@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Text, distinct, select
+from sqlalchemy import create_engine, Column, Text, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
@@ -31,13 +31,31 @@ class ImageEmbedding(Base):
 def find_similar_images(image_feature, top_num = 5):
     session = SessionLocal()
     try:
+        # query = (
+        #     session.query(ImageEmbedding.cdn_url, (ImageEmbedding.embedding.l2_distance(image_feature)).label('distance'))
+        #     .order_by('distance')
+        #     .limit(top_num)
+        # )
+
+        subquery = (
+            session.query(
+                ImageEmbedding.style_ID,
+                func.min(ImageEmbedding.embedding.l2_distance(image_feature)).label('min_distance')
+            )
+            .group_by(ImageEmbedding.style_ID)
+            .subquery()
+        )
         query = (
-            session.query(ImageEmbedding.cdn_url, (ImageEmbedding.embedding.l2_distance(image_feature)).label('distance'))
+            session.query(
+                ImageEmbedding.cdn_url,
+                ImageEmbedding.style_ID,
+                (ImageEmbedding.embedding.l2_distance(image_feature)).label('distance')
+            )
+            .join(subquery, (ImageEmbedding.style_ID == subquery.c.style_ID) & (ImageEmbedding.embedding.l2_distance(image_feature) == subquery.c.min_distance))
             .order_by('distance')
             .limit(top_num)
         )
-        sub_query = session.query(distinct(ImageEmbedding.style_ID))
-        .where
+        
         logging.info(query)
         similar_images = query.all()
         cdn_url_list = []
