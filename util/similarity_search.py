@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Text
+from sqlalchemy import create_engine, Column, Text, distinct, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
@@ -36,6 +36,8 @@ def find_similar_images(image_feature, top_num = 5):
             .order_by('distance')
             .limit(top_num)
         )
+        sub_query = session.query(distinct(ImageEmbedding.style_ID))
+        .where
         logging.info(query)
         similar_images = query.all()
         cdn_url_list = []
