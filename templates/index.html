@@ -61,6 +61,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log(data)
                 // Clear previous images
                 document.getElementById('originalImageContainer').innerHTML = '';
                 document.getElementById('segmentedImageContainer').innerHTML = '';
@@ -74,16 +75,16 @@
                 }
 
                 // Display the segmented image
-                if (data.segmented_image) {
+                if (data.segmented_condaimage) {
                     let segmentedImg = new Image();
-                    segmentedImg.src = 'data:image/png;base64,' + data.segmented_image;
+                    segmentedImg.src = 'data:image/png;base64,' + data.segmented_condaimage;
                     document.getElementById('segmentedImageContainer').appendChild(segmentedImg);
                 }
 
                 // Display similar images
                 if (data.similar_images) {
                     data.similar_images.forEach(function(image) {
-                        let imgUrl = image[0];
+                        let imgUrl = image;
                         let img = new Image();
                         img.src = imgUrl;
                         document.getElementById('similarImagesContainer').appendChild(img);

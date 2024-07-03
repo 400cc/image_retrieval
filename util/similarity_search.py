@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, Column, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
+import logging
 
 # PostgreSQL 연결 정보
 DATABASE = {
@@ -35,8 +36,13 @@ def find_similar_images(image_feature, top_num = 5):
             .order_by('distance')
             .limit(top_num)
         )
+        logging.info(query)
         similar_images = query.all()
+        cdn_url_list = []
+        for similar_image in similar_images :
+            cdn_url_list.append(similar_image[0])
+        
     finally:
         session.close()
     
-    return similar_images
+    return cdn_url_list

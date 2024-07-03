@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from PIL import Image
-import io
+import io, traceback
 import base64
 import logging
 
@@ -70,11 +70,12 @@ async def process_image(
         
         return JSONResponse(content={
             "original_image": original_image_base64,
-            "segmented_image": segmented_image_base64,
+            "segmented_condaimage": segmented_image_base64,
             "image_features": image_features_list,
             "similar_images": similar_images
         })
     
     except Exception as e:
         logging.error(f"Error processing image: {str(e)}")
+        logging.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Error processing image")
