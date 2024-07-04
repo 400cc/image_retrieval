@@ -23,7 +23,7 @@ Base = declarative_base()
 
 class ImageEmbedding(Base):
     __tablename__ = "version4"
-    style_ID = Column(Text)
+    style_id = Column(Text)
     cdn_url = Column(Text, primary_key=True, index=True)
     category = Column(Text)
     embedding = Column(Vector(768))
@@ -39,19 +39,19 @@ def find_similar_images(image_feature, top_num = 5):
 
         subquery = (
             session.query(
-                ImageEmbedding.style_ID,
+                ImageEmbedding.style_id,
                 func.min(ImageEmbedding.embedding.l2_distance(image_feature)).label('min_distance')
             )
-            .group_by(ImageEmbedding.style_ID)
+            .group_by(ImageEmbedding.style_id)
             .subquery()
         )
         query = (
             session.query(
                 ImageEmbedding.cdn_url,
-                ImageEmbedding.style_ID,
+                ImageEmbedding.style_id,
                 (ImageEmbedding.embedding.l2_distance(image_feature)).label('distance')
             )
-            .join(subquery, (ImageEmbedding.style_ID == subquery.c.style_ID) & (ImageEmbedding.embedding.l2_distance(image_feature) == subquery.c.min_distance))
+            .join(subquery, (ImageEmbedding.style_id == subquery.c.style_id) & (ImageEmbedding.embedding.l2_distance(image_feature) == subquery.c.min_distance))
             .order_by('distance')
             .limit(top_num)
         )
