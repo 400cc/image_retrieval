@@ -131,8 +131,8 @@ for i, cdn_url in enumerate(cdn_urls):
     category = mapped_dict.get(style_id, '')
 
     # 이미지와 피처 처리 함수 호출
-    image, vec = process_image_and_feature(cdn_url, category)
-    vec = vec.cpu().numpy().tolist()
+    vec = process_image_and_feature(cdn_url, category)
+    # vec = vec.cpu().numpy().tolist()
     
     data_to_insert.append((style_id, category, vec, cdn_url))
     print(f'{i}번째 완료')
