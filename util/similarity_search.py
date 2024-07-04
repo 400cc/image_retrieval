@@ -58,11 +58,15 @@ def find_similar_images(image_feature, top_num = 5):
         
         logging.info(query)
         similar_images = query.all()
-        cdn_url_list = []
-        for similar_image in similar_images :
-            cdn_url_list.append(similar_image[0])
+        style_image_dict = {}
+        for similar_image in similar_images:
+            style_id = similar_image.style_id
+            cdn_url = similar_image.cdn_url
+            if style_id not in style_image_dict:
+                style_image_dict[style_id] = []
+            style_image_dict[style_id].append(cdn_url)
         
     finally:
         session.close()
     
-    return cdn_url_list
+    return style_image_dict

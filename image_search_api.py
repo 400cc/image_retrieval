@@ -30,10 +30,10 @@ def allowed_file(filename):
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post('/process_image')
+@app.post('/process/image')
 async def process_image(
     image_upload: UploadFile = File(...), 
-    input_data: str = Form(...),
+    category: str = Form(...),
     top_num: int = Form(5)  # top_num 값을 폼 데이터에서 가져옴
 ):
     # 파일 확장자 검사
@@ -45,7 +45,7 @@ async def process_image(
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
         # 이미지 및 이미지 특징 처리
-        segmented_image, image_feature = process_image_and_feature_by_app(image, input_data)
+        segmented_image, image_feature = process_image_and_feature_by_app(image, category)
         
         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
         original_image_byte_array = io.BytesIO()
@@ -61,18 +61,18 @@ async def process_image(
         image_features_list = [feat.tolist() for feat in image_feature]
         
         # 로그 남기기
-        logging.info(f"Processed image: Input data: {input_data}, Image features: {image_features_list}")
+        logging.info(f"Processed image: Input data: {category}, Image features: {image_features_list}")
         
         # 유사한 이미지 검색 및 반환
-        similar_images = find_similar_images(image_features_list, top_num)
+        similar_image_dict = find_similar_images(image_features_list, top_num)
         
-        logging.info(f"Similar images: {similar_images}")
+        logging.info(f"Similar images: {similar_image_dict}")
         
         return JSONResponse(content={
             "original_image": original_image_base64,
             "segmented_condaimage": segmented_image_base64,
             "image_features": image_features_list,
-            "similar_images": similar_images
+            "similar_images": similar_image_dict
         })
     
     except Exception as e:
