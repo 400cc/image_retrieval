@@ -2,6 +2,9 @@ from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from typing import List
+from pydantic import BaseModel
+from util.extract_image_feature import process_image_and_feature
 from PIL import Image
 import io, traceback
 import base64
@@ -13,6 +16,10 @@ from util.similarity_search import find_similar_images
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)  # 로그 레벨 설정 (INFO 이상만 출력)
 
+class Image_url_category(BaseModel):
+    image_url_list: List[str]
+    category_list : List[str]
+    
 app = FastAPI()
 
 # 정적 파일 및 템플릿 디렉토리 설정
@@ -29,6 +36,21 @@ def allowed_file(filename):
 @app.get('/')
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+    
+#TODO - 성호형컴: Airflow 이미지 수집 후 벡터화 응답
+@app.post("/") 
+async def process_lists(request : Image_url_category):
+    vectorized_result_list = []
+    try:
+        for index in range(len(request.image_url_list)):
+            vectorized_result = process_image_and_feature(request.image_url_list[index], request.category_list[index])
+            vectorized_result_list.append(vectorized_result)
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))
+    
+    return {"vectorized_response" : vectorized_result_list}
+
 
 @app.post('/process/image')
 async def process_image(
