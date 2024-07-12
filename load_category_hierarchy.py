@@ -4,7 +4,7 @@ from typing import List, Dict
 from util.mysql_db_util import create_connection_pool, get_db_connection
 
 # 데이터베이스 설정 파일 경로
-config_path = 'mysql_config.json'
+config_path = 'util/mysql_config.json'
 
 # 커넥션 풀 생성
 connection_pool = create_connection_pool(config_path)
@@ -60,7 +60,9 @@ category_hierarchy_cache = {}
 # 데이터 로드 및 처리 함수
 def load_category_hierarchy():
     rows = fetch_data_from_db()  # 데이터베이스에서 데이터 가져오기
-    process_hierarchy_rows(rows)  # 가져온 데이터 처리
+    process_hierarchy_rows(rows)
+    return category_hierarchy_cache
+
 
 # 쿼리 결과를 처리하는 함수
 def process_hierarchy_rows(rows):
