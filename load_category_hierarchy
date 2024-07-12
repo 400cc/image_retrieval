@@ -4,7 +4,7 @@ from typing import List, Dict
 from util.mysql_db_util import create_connection_pool, get_db_connection
 
 # 데이터베이스 설정 파일 경로
-config_path = 'db_config.json'
+config_path = 'mysql_config.json'
 
 # 커넥션 풀 생성
 connection_pool = create_connection_pool(config_path)
