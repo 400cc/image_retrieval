@@ -108,7 +108,7 @@ def get_pg_connection():
     return conn_pg, tunnel
 
 def load_category_names():
-    conn = get_pg_connection()[0]
+    conn = get_db_connection(connection_pool)
     cursor = conn.cursor()
 
     sql_query = """
@@ -188,8 +188,11 @@ def save_embeddings(mapped_dict):
         conn_pg.close()
         tunnel.close()
 
-def main():    
-    category_names = load_category_names()
-    translated_dict = translate_category_name(category_names)   
-    mapped_dict = mapping_translated_category(translated_dict)
-    save_embeddings(mapped_dict)
+
+category_names = load_category_names()
+print('완료')
+translated_dict = translate_category_name(category_names)
+print('완료2') 
+mapped_dict = mapping_translated_category(translated_dict)
+print('완료3')
+save_embeddings(mapped_dict)

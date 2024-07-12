@@ -46,7 +46,7 @@ async def process_lists(request : Image_url_category):
         for index in range(len(request.image_url_list)):
             vectorized_result = process_image_and_feature(request.image_url_list[index], request.category_list[index])
             vectorized_result_list.append(vectorized_result)
-    except Exception as e:
+    except Exception as e:  
         return HTTPException(status_code=400, detail=str(e))
     
     return {"vectorized_response" : vectorized_result_list}

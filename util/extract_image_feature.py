@@ -119,6 +119,8 @@ def apply_mask_to_image(image, mask):
 # grounded SAM pipeline
 def SAM(prompt, image, image_source):
     detected_boxes, annotated_frame = detect(image, prompt, image_source=image_source, model=groundingdino_model)
+    if detected_boxes.size(0) == 0:
+        return image_source, None
     segmented_frame_masks = segment(image_source, sam_predictor, boxes=detected_boxes)
     masked_region_only = apply_mask_to_image(image_source, segmented_frame_masks[0][0])
     return masked_region_only, annotated_frame
