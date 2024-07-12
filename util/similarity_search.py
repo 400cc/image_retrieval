@@ -25,17 +25,11 @@ class ImageEmbedding(Base):
     __tablename__ = "version4"
     style_id = Column(Text)
     cdn_url = Column(Text, primary_key=True, index=True)
-    category = Column(Text)
     embedding = Column(Vector(768))
     
 def find_similar_images(image_feature, top_num = 5):
     session = SessionLocal()
     try:
-        # query = (
-        #     session.query(ImageEmbedding.cdn_url, (ImageEmbedding.embedding.l2_distance(image_feature)).label('distance'))
-        #     .order_by('distance')
-        #     .limit(top_num)
-        # )
 
         subquery = (
             session.query(
