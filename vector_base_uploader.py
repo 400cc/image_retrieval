@@ -161,7 +161,10 @@ def save_embeddings(mapped_dict):
             categories = mapped_dict.get(style_id, [])
             category = ', '.join([' '.join(sublist) for sublist in categories])
 
-            vec = process_image_and_feature(cdn_url, category)
+            try:
+                vec = process_image_and_feature(cdn_url, category)
+            except:
+                continue
             data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
             print(f'category : {category}, {i}번째 완료')
 
