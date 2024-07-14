@@ -107,20 +107,6 @@ def get_pg_connection():
     )
     return conn_pg, tunnel
 
-def load_category_names():
-    conn = get_db_connection(connection_pool)
-    cursor = conn.cursor()
-
-    sql_query = """
-        SELECT DISTINCT name
-        FROM category
-    """
-
-    cursor.execute(sql_query)
-    category_names = [name for (name,) in cursor.fetchall()]
-    conn.close()
-    return category_names
-
 def translate_category_names(category_names):
     translator = Translator()
     translated_dict = {}
@@ -141,6 +127,18 @@ def mapping_translated_category(translated_dict):
     }
     return translated_category_hierarchy
 
+def load_cdn_urls():
+    conn = get_pg_connection()[0]
+    cursor = conn.cursor()
+    sql_query = """
+        SELECT DISTINCT cdn_url
+        FROM image_vector
+    """
+    cursor.execute(sql_query)
+    cdn_urls = [cdn_url for (cdn_url,) in cursor.fetchall()]
+    conn.close()
+    return cdn_urls
+
 def save_embeddings(mapped_dict):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
@@ -149,34 +147,36 @@ def save_embeddings(mapped_dict):
     conn_pg, tunnel = get_pg_connection()
     conn_pg.autocommit = True
     cur = conn_pg.cursor()
+    existing_cdn_urls = load_cdn_urls()
 
     try:
         for i, cdn_url in enumerate(all_cdn_urls):
-            parts = cdn_url.split('/')
-            style_id = parts[-2]
-            mall_type_name = parts[-3]
-            mall_type_id = mall_type_mapping_dict[mall_type_name]
-            
-            # mapping_dict에서 style_id에 해당하는 category를 찾기
-            categories = mapped_dict.get(style_id, [])
-            category = ', '.join([' '.join(sublist) for sublist in categories])
+            if cdn_url not in existing_cdn_urls:
+                parts = cdn_url.split('/')
+                style_id = parts[-2]
+                mall_type_name = parts[-3]
+                mall_type_id = mall_type_mapping_dict[mall_type_name]
+                
+                # mapping_dict에서 style_id에 해당하는 category를 찾기
+                categories = mapped_dict.get(style_id, [])
+                category = ', '.join([' '.join(sublist) for sublist in categories])
 
-            try:
-                vec = process_image_and_feature(cdn_url, category)
-            except:
-                continue
-            data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
-            print(f'category : {category}, {i}번째 완료')
+                try:
+                    vec = process_image_and_feature(cdn_url, category)
+                except:
+                    continue
+                data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
+                print(f'category : {category}, {i}번째 완료')
 
-            if len(data_to_insert) >= 100:
-                psycopg2.extras.execute_batch(cur, """
-                    INSERT INTO image_vector (style_id, cdn_url, mall_type_id, embedding) 
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (cdn_url) DO NOTHING
-                """, data_to_insert)
-                conn_pg.commit()
-                print('100개 아이템 데이터베이스에 삽입 완료')
-                data_to_insert = []
+                if len(data_to_insert) >= 100:
+                    psycopg2.extras.execute_batch(cur, """
+                        INSERT INTO image_vector (style_id, cdn_url, mall_type_id, embedding) 
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (cdn_url) DO NOTHING
+                    """, data_to_insert)
+                    conn_pg.commit()
+                    print('100개 아이템 데이터베이스에 삽입 완료')
+                    data_to_insert = []
 
         if data_to_insert:
             psycopg2.extras.execute_batch(cur, """
