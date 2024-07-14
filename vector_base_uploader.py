@@ -135,7 +135,7 @@ def load_cdn_urls():
         FROM image_vector
     """
     cursor.execute(sql_query)
-    cdn_urls = [cdn_url for (cdn_url,) in cursor.fetchall()]
+    cdn_urls = {cdn_url for (cdn_url,) in cursor.fetchall()}
     conn.close()
     return cdn_urls
 
@@ -164,6 +164,7 @@ def save_embeddings(mapped_dict):
                 try:
                     vec = process_image_and_feature(cdn_url, category)
                 except:
+                    print(f'Error processing image: {e}')
                     continue
                 data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
                 print(f'category : {category}, {i}번째 완료')
@@ -180,7 +181,7 @@ def save_embeddings(mapped_dict):
 
         if data_to_insert:
             psycopg2.extras.execute_batch(cur, """
-                INSERT INTO version4 (style_id, category, embedding, cdn_url) 
+                INSERT INTO image_vector (style_id, category, embedding, cdn_url) 
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (cdn_url) DO NOTHING
             """, data_to_insert)
