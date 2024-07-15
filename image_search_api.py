@@ -87,15 +87,14 @@ async def process_image(
         logging.info(f"Processed image: Input data: {category}, Image features: {image_features_list}")
         
         # 유사한 이미지 검색 및 반환
-        similar_image_dict = find_similar_images(style_id_list, image_feature, offset)
+        similar_images = find_similar_images(style_id_list, image_feature, offset)
         
-        logging.info(f"Similar images: {similar_image_dict}")
+        logging.info(f"Similar images: {similar_images}")
         
         return JSONResponse(content={
             "original_image": original_image_base64,
             "segmented_condaimage": segmented_image_base64,
-            "image_features": image_features_list,
-            "similar_images": similar_image_dict
+            "similar_images": similar_images
         })
     
     except Exception as e:

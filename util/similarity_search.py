@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
 import logging
+from vector_base_uploader import get_pg_connection
 
 # PostgreSQL 연결 정보
 DATABASE = {
@@ -28,30 +29,43 @@ class ImageVector(Base):
     mall_type_id = Column(String(255))
     embedding = Column(Vector(768))
     
-def find_similar_images(style_id_list, image_feature, offset = 5):
-    session = SessionLocal()
+def find_similar_images(style_id_list, image_feature, offset=5):
+    conn_pg, tunnel = get_pg_connection()
     try:
-        query = (
-            session.query(
-                ImageVector.cdn_url,
-                ImageVector.style_id,
-                (ImageVector.embedding.l2_distance(image_feature)).label('distance')
-            )
-            .filter(ImageVector.style_id.in_(style_id_list))
-            .order_by('distance')
-            .limit(offset)
-        )
-        logging.info(query)
-        similar_images = query.all()
-        style_image_dict = {}
-        for similar_image in similar_images:
-            style_id = similar_image.style_id
-            cdn_url = similar_image.cdn_url
-            if style_id not in style_image_dict:
-                style_image_dict[style_id] = []
-            style_image_dict[style_id].append(cdn_url)
+        cursor = conn_pg.cursor()
+
+        query = """
+        SELECT
+            cdn_url,
+            style_id,
+            mall_type_id,
+            embedding <-> %s AS distance
+        FROM
+            image_vector
+        WHERE
+            style_id = ANY(%s)
+        ORDER BY
+            distance
+        LIMIT %s;
+        """
+
+        cursor.execute(query, (image_feature, style_id_list, offset))
+        similar_images = cursor.fetchall()
+
+        results = []
+        for row in similar_images:
+            cdn_url, style_id, mall_type_id, distance = row
+            result = {
+                'cdn_url': cdn_url,
+                'style_id': style_id,
+                'mall_type_id': mall_type_id,
+            }
+            results.append(result)
         
+        cursor.close()
+        return results
+
     finally:
-        session.close()
+        conn_pg.close()
+        tunnel.close()
     
-    return style_image_dict

@@ -163,7 +163,7 @@ def save_embeddings(mapped_dict):
 
                 try:
                     vec = process_image_and_feature(cdn_url, category)
-                except:
+                except Exception as e:
                     print(f'Error processing image: {e}')
                     continue
                 data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
