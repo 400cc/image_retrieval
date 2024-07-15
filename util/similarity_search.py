@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Text, func
+from sqlalchemy import create_engine, Column, Text, String, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
@@ -21,35 +21,26 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # SQLAlchemy 베이스 모델 생성
 Base = declarative_base()
 
-class ImageEmbedding(Base):
-    __tablename__ = "version4"
+class ImageVector(Base):
+    __tablename__ = "image_vector"
     style_id = Column(Text)
     cdn_url = Column(Text, primary_key=True, index=True)
+    mall_type_id = Column(String(255))
     embedding = Column(Vector(768))
     
-def find_similar_images(image_feature, top_num = 5):
+def find_similar_images(style_id_list, image_feature, offset = 5):
     session = SessionLocal()
     try:
-
-        subquery = (
-            session.query(
-                ImageEmbedding.style_id,
-                func.min(ImageEmbedding.embedding.l2_distance(image_feature)).label('min_distance')
-            )
-            .group_by(ImageEmbedding.style_id)
-            .subquery()
-        )
         query = (
             session.query(
-                ImageEmbedding.cdn_url,
-                ImageEmbedding.style_id,
-                (ImageEmbedding.embedding.l2_distance(image_feature)).label('distance')
+                ImageVector.cdn_url,
+                ImageVector.style_id,
+                (ImageVector.embedding.l2_distance(image_feature)).label('distance')
             )
-            .join(subquery, (ImageEmbedding.style_id == subquery.c.style_id) & (ImageEmbedding.embedding.l2_distance(image_feature) == subquery.c.min_distance))
+            .filter(ImageVector.style_id.in_(style_id_list))
             .order_by('distance')
-            .limit(top_num)
+            .limit(offset)
         )
-        
         logging.info(query)
         similar_images = query.all()
         style_image_dict = {}

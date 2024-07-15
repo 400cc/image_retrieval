@@ -56,7 +56,8 @@ async def process_lists(request : Image_url_category):
 async def process_image(
     image_upload: UploadFile = File(...), 
     category: str = Form(...),
-    top_num: int = Form(5)  # top_num 값을 폼 데이터에서 가져옴
+    offset: int = Form(5),
+    style_id_list: str = Form(...)
 ):
     # 파일 확장자 검사
     if not allowed_file(image_upload.filename):
@@ -86,7 +87,7 @@ async def process_image(
         logging.info(f"Processed image: Input data: {category}, Image features: {image_features_list}")
         
         # 유사한 이미지 검색 및 반환
-        similar_image_dict = find_similar_images(image_features_list, top_num)
+        similar_image_dict = find_similar_images(style_id_list, image_feature, offset)
         
         logging.info(f"Similar images: {similar_image_dict}")
         
