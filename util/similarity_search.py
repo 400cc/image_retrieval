@@ -33,23 +33,23 @@ def find_similar_images(style_id_list, image_feature, offset=5):
     conn_pg, tunnel = get_pg_connection()
     try:
         cursor = conn_pg.cursor()
-
+        style_id_tuple = tuple(style_id_list)
         query = """
         SELECT
             cdn_url,
             style_id,
             mall_type_id,
-            embedding <-> %s AS distance
+            embedding <-> %s::vector AS distance
         FROM
             image_vector
         WHERE
-            style_id = ANY(%s)
+            style_id IN %s
         ORDER BY
             distance
         LIMIT %s;
         """
-
-        cursor.execute(query, (image_feature, style_id_list, offset))
+        logging.info("styleIdLIst:", style_id_list)
+        cursor.execute(query, (image_feature, style_id_tuple, offset))
         similar_images = cursor.fetchall()
 
         results = []
