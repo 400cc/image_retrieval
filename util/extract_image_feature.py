@@ -116,6 +116,7 @@ def apply_mask_to_image(image, mask):
 
     return masked_region_only
 
+
 # grounded SAM pipeline
 def SAM(prompt, image, image_source):
     detected_boxes, annotated_frame = detect(image, prompt, image_source=image_source, model=groundingdino_model)
@@ -125,35 +126,50 @@ def SAM(prompt, image, image_source):
     masked_region_only = apply_mask_to_image(image_source, segmented_frame_masks[0][0])
     return masked_region_only, annotated_frame
 
+
+def image_encoding(sam_image_result):
+    with torch.no_grad():
+        preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
+        image_feature = model.encode_image(preprocessed_image)
+        image_feature = image_feature[0].cpu().numpy().tolist()
+        return image_feature
+
+
 def process_image_and_feature_by_local(image_path, category):
     image_source, image = load_image(image_path)
     sam_image, _ = SAM(category, image, image_source)
     sam_image_result = Image.fromarray(sam_image)
-    with torch.no_grad():
-        preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
-        image_features = model.encode_image(preprocessed_image)
-        image_feature = image_features[0]
+    image_feature = image_encoding(sam_image_result)
         
     return sam_image_result, image_feature
+
 
 def process_image_and_feature(image_path, category):
     image_source, image = load_image_from_url(image_path)
     sam_image, _ = SAM(category, image, image_source)
     sam_image_result = Image.fromarray(sam_image)
-    with torch.no_grad():
-        preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
-        image_features = model.encode_image(preprocessed_image)
-        image_feature = image_features[0].cpu().numpy().tolist()
+    image_feature = image_encoding(sam_image_result)
         
     return image_feature
+
+
 
 def process_image_and_feature_by_app(image_path, category):
     image_source, image = load_image_from_memory(image_path)
     sam_image, _ = SAM(category, image, image_source)
     sam_image_result = Image.fromarray(sam_image)
-    with torch.no_grad():
-        preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
-        image_features = model.encode_image(preprocessed_image)
-        image_feature = image_features[0].cpu().numpy().tolist()
+    image_feature = image_encoding(sam_image_result)
         
     return sam_image_result, image_feature
+
+
+# def process_image_and_feature_by_app(image_path, category):
+#     image_source, image = load_image_from_memory(image_path)
+#     sam_image, _ = SAM(category, image, image_source)
+#     sam_image_result = Image.fromarray(sam_image)
+#     with torch.no_grad():
+#         preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
+#         image_features = model.encode_image(preprocessed_image)
+#         image_feature = image_features[0].cpu().numpy().tolist()
+        
+#     return sam_image_result, image_feature
