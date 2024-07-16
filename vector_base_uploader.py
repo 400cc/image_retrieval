@@ -193,10 +193,10 @@ def save_embeddings(mapped_dict):
         tunnel.close()
 
 
-category_names = load_category_names()
-print('완료')
-translated_dict = translate_category_name(category_names)
-print('완료2') 
-mapped_dict = mapping_translated_category(translated_dict)
-print('완료3')
-save_embeddings(mapped_dict)
+# category_names = load_category_names()
+# print('완료')
+# translated_dict = translate_category_name(category_names)
+# print('완료2') 
+# mapped_dict = mapping_translated_category(translated_dict)
+# print('완료3')
+# save_embeddings(mapped_dict)
