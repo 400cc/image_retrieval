@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from util.extract_image_feature import process_image_and_feature
 from PIL import Image
 import io, traceback
+import json
 import base64
 import logging
 
@@ -59,6 +60,7 @@ async def process_image(
     offset: int = Form(5),
     style_id_list: str = Form(...)
 ):
+    style_id_list = json.loads(style_id_list)
     # 파일 확장자 검사
     if not allowed_file(image_upload.filename):
         raise HTTPException(status_code=415, detail="Unsupported file format")
@@ -81,10 +83,10 @@ async def process_image(
         segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
         
         # 이미지 특징을 JSON 형태로 반환
-        image_features_list = [feat.tolist() for feat in image_feature]
+        # image_features_list = [feat.tolist() for feat in image_feature]
         
         # 로그 남기기
-        logging.info(f"Processed image: Input data: {category}, Image features: {image_features_list}")
+        logging.info(f"Processed image: Input data: {category}, Image feature: {image_feature}")
         
         # 유사한 이미지 검색 및 반환
         similar_images = find_similar_images(style_id_list, image_feature, offset)

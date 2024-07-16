@@ -154,6 +154,6 @@ def process_image_and_feature_by_app(image_path, category):
     with torch.no_grad():
         preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
         image_features = model.encode_image(preprocessed_image)
-        image_feature = image_features[0]
+        image_feature = image_features[0].cpu().numpy().tolist()
         
     return sam_image_result, image_feature
