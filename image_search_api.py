@@ -112,6 +112,7 @@ async def process_image(
     category: str = Form(...),
     offset: int = Form(5),
     style_id_list: str = Form(...)
+    mall_type_id: str = Form(...)
 ):
     style_id_list = json.loads(style_id_list)
     # 파일 확장자 검사
@@ -142,7 +143,7 @@ async def process_image(
         logging.info(f"Processed image: Input data: {category}, Image feature: {image_feature}")
         
         # 유사한 이미지 검색 및 반환
-        similar_images = find_similar_images(style_id_list, image_feature, offset)
+        similar_images = find_similar_images(style_id_list, mall_type_id, category, image_feature, offset)
         
         logging.info(f"Similar images: {similar_images}")
         
