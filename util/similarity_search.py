@@ -29,27 +29,48 @@ class ImageVector(Base):
     mall_type_id = Column(String(255))
     embedding = Column(Vector(768))
     
-def find_similar_images(style_id_list, image_feature, offset=5):
+def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
+    # 기본 쿼리
+    query = """
+    SELECT
+        cdn_url,
+        style_id,
+        mall_type_id,
+        embedding <-> %s::vector AS distance
+    FROM
+        image_vector
+    """
+    
+    conditions = []
+    params = [image_feature]  # image_feature는 함수 외부에서 전달받는 변수라고 가정합니다.
+    
+    if mall_type_id is not None and category != "":
+        conditions.append("style_id IN %s")
+        params.append(tuple(style_id_list))
+    elif mall_type_id is not None and category == "":
+        conditions.append("mall_type_id = %s")
+        params.append(mall_type_id)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += """
+    ORDER BY 
+        distance
+    LIMIT %s;
+    """
+    params.append(offset)
+    
+    return query, params
+
+def find_similar_images(style_id_list, mall_type_id, category, image_feature, offset=5):
     conn_pg, tunnel = get_pg_connection()
     try:
         cursor = conn_pg.cursor()
-        style_id_tuple = tuple(style_id_list)
-        query = """
-        SELECT
-            cdn_url,
-            style_id,
-            mall_type_id,
-            embedding <-> %s::vector AS distance
-        FROM
-            image_vector
-        WHERE
-            style_id IN %s
-        ORDER BY
-            distance
-        LIMIT %s;
-        """
-        logging.info("styleIdLIst:", style_id_list)
-        cursor.execute(query, (image_feature, style_id_tuple, offset))
+        query, params = build_filter(style_id_list, mall_type_id, image_feature, category, offset)
+        
+        logging.info("Executing query: %s with params: %s", query, params)
+        cursor.execute(query, params)
         similar_images = cursor.fetchall()
 
         results = []
@@ -59,6 +80,7 @@ def find_similar_images(style_id_list, image_feature, offset=5):
                 'cdn_url': cdn_url,
                 'style_id': style_id,
                 'mall_type_id': mall_type_id,
+                'distance': distance,
             }
             results.append(result)
         
@@ -68,4 +90,3 @@ def find_similar_images(style_id_list, image_feature, offset=5):
     finally:
         conn_pg.close()
         tunnel.close()
-    
