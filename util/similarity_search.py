@@ -28,7 +28,7 @@ class ImageVector(Base):
     cdn_url = Column(Text, primary_key=True, index=True)
     mall_type_id = Column(String(255))
     embedding = Column(Vector(768))
-    
+
 def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     # 기본 쿼리
     query = """
@@ -57,9 +57,8 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     query += """
     ORDER BY 
         distance
-    LIMIT %s;
     """
-    params.append(offset)
+    # 쿼리에서 LIMIT는 제거합니다.
     
     return query, params
 
@@ -73,16 +72,22 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
         cursor.execute(query, params)
         similar_images = cursor.fetchall()
 
+        # 중복된 style_id 제거
+        seen_style_ids = set()
         results = []
         for row in similar_images:
             cdn_url, style_id, mall_type_id, distance = row
-            result = {
-                'cdn_url': cdn_url,
-                'style_id': style_id,
-                'mall_type_id': mall_type_id,
-                'distance': distance,
-            }
-            results.append(result)
+            if style_id not in seen_style_ids:
+                seen_style_ids.add(style_id)
+                result = {
+                    'cdn_url': cdn_url,
+                    'style_id': style_id,
+                    'mall_type_id': mall_type_id,
+                    'distance': distance,
+                }
+                results.append(result)
+            if len(results) >= offset:
+                break
         
         cursor.close()
         return results
