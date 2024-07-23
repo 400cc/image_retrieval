@@ -85,18 +85,24 @@ def detect(image, text_prompt, model, image_source, box_threshold = 0.3, text_th
 
 # 얻은 박스를 프롬프트로 활용하여 SAM 적용
 def segment(image, sam_model, boxes):
-  sam_model.set_image(image)
-  H, W, _ = image.shape
-  boxes_xyxy = box_ops.box_cxcywh_to_xyxy(boxes) * torch.Tensor([W, H, W, H])
+    sam_model.set_image(image)
+    H, W, _ = image.shape
+  
+    if boxes.size(0) == 0:
+        print('whole box 생성')
+        full_image_box = torch.tensor([[0.0, 0.0, W, H]], dtype=torch.float32)  # [x1, y1, x2, y2]
+        boxes_xyxy = full_image_box
+    else:
+        boxes_xyxy = box_ops.box_cxcywh_to_xyxy(boxes) * torch.Tensor([W, H, W, H])
 
-  transformed_boxes = sam_model.transform.apply_boxes_torch(boxes_xyxy.to(DEVICE), image.shape[:2])
-  masks, _, _ = sam_model.predict_torch(
-      point_coords = None,
-      point_labels = None,
-      boxes = transformed_boxes,
-      multimask_output = False,
-      )
-  return masks.cpu()
+    transformed_boxes = sam_model.transform.apply_boxes_torch(boxes_xyxy.to(DEVICE), image.shape[:2])
+    masks, _, _ = sam_model.predict_torch(
+        point_coords = None,
+        point_labels = None,
+        boxes = transformed_boxes,
+        multimask_output = False,
+        )
+    return masks.cpu()
 
 
 # 상품 크기에 맞추어 이미지 crop
@@ -120,8 +126,8 @@ def apply_mask_to_image(image, mask):
 # grounded SAM pipeline
 def SAM(prompt, image, image_source):
     detected_boxes, annotated_frame = detect(image, prompt, image_source=image_source, model=groundingdino_model)
-    if detected_boxes.size(0) == 0:
-        return image_source, None
+    # if detected_boxes.size(0) == 0:
+    #     return image_source, None
     segmented_frame_masks = segment(image_source, sam_predictor, boxes=detected_boxes)
     masked_region_only = apply_mask_to_image(image_source, segmented_frame_masks[0][0])
     return masked_region_only, annotated_frame
