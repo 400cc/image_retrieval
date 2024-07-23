@@ -46,45 +46,40 @@ wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 ```
 
 <br> <br>
+## 이미지 검색 Test
+### database 연결
+다음과 같이 API를 띄울 환경에 MySQL, PostgreSQL을 연결합니다.
 
-## pgvector
+* MySQL (MobaXterm에서 Tunneling)<br>
+![image](https://github.com/user-attachments/assets/d354d887-c2da-4c27-bb48-0a66f84bd2a6)
+* PostgreSQL (pgAdmin에서 Tunneling)<br>
+![image](https://github.com/user-attachments/assets/9722764f-8492-4572-a827-d01f2c283c76)
+![image](https://github.com/user-attachments/assets/6736a010-d5d8-4c23-8e30-6f38dc522b77)
 
-vector extension을 설치합니다.
 
+### GroundingDINO 수정
+GroundingDINO\groundingdino\util\inference.py 파일에 다음과 같은 함수를 추가해줍니다.
+```python
+def load_image_from_memory(image_source: Image.Image) -> Tuple[np.ndarray, torch.Tensor]:
+    transform = T.Compose(
+        [
+            T.RandomResize([800], max_size=1333),
+            T.ToTensor(),
+            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ]
+    )
+    
+    # 이미지를 numpy 배열로 변환
+    image = np.asarray(image_source)
+    
+    # 변환된 이미지를 텐서로 변환
+    image_transformed, _ = transform(image_source, None)
+    
+    return image, image_transformed
 ```
-CREATE EXTENSION vector;
+
+### API 실행
+다음과 같은 코드로 FastAPI를 실행합니다.
 ```
-
-<br>
-
-임시 TABLE을 생성합니다. embedding vector 컬럼의 크기는 CLIP embedding 결과 길이가 512이므로 알맞게 설정합니다. 
-
+uvicorn image_search_api:app
 ```
-CREATE TABLE items (id bigserial PRIMARY KEY, embedding vector(512));
-```
-
-<br>
-
-## Run segment_and_insert_pgvector.ipynb
-cdn에 저장된 이미지들을 Grounded SAM으로 의상만 분할 후 CLIP encoder로 임베딩하여 pgvector에 저장하는 임시 파이프라인 코드입니다. 아직 cdn에 수집된 이미지가 없기 때문에 로컬에 저장된 이미지로 실행했습니다. 추후 cdn에서 이미지를 불러오고, 해당 이미지의 카테고리도 함께 가져오도록 수정되어야 합니다.
-
-![alt text](assets/image-1.png)
-
-<br>
-
-## Run test_similarity.ipynb
-
-사용자에게 이미지와 카테고리를 입력받아 Grounded SAM으로 분할 후 CLIP encoder로 임베딩 후, pgvector에 저장된 이미지 임베딩들과 가장 높은 cosine similarity를 갖는 상위 5개 벡터를 보여주는 임시 코드입니다.
-
-![alt text](assets/image-3.png)
-
-### output
-```
-Top similar images:
-Image ID: 1, Similarity Score: 3.8470888600529562
-Image ID: 5, Similarity Score: 4.106290058190262
-Image ID: 4, Similarity Score: 6.348187477771091
-Image ID: 2, Similarity Score: 6.4871681907635095
-Image ID: 3, Similarity Score: 7.825285436524724
-```
-위 5개 이미지 중 같은 상품이면서 다른 이미지였던 첫 번째 이미지의 유사도가 가장 높게 나온 것을 확인할 수 있습니다.
