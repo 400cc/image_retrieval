@@ -36,7 +36,7 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
         cdn_url,
         style_id,
         mall_type_id,
-        embedding <-> %s::vector AS distance
+        embedding <=> %s::vector AS distance
     FROM
         image_vector
     """
@@ -71,7 +71,9 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
         logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
         similar_images = cursor.fetchall()
-
+        print(f'비슷한 이미지 개수 : {len(similar_images)}')
+        print(f'input 길이 : {len(image_feature)}')
+        print(f'카테고리: {category}')
         # 중복된 style_id 제거
         seen_style_ids = set()
         results = []

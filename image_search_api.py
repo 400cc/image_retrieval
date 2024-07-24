@@ -54,69 +54,15 @@ async def process_lists(request : Image_url_category):
     return {"vectorized_response" : vectorized_result_list}
 
 
-# @app.post('/process/image')
-# async def process_image(
-#     image_upload: UploadFile = File(...), 
-#     category: str = Form(""),
-#     offset: int = Form(5),
-#     style_id_list: str = Form(""),
-#     mall_type_id: str = Form(None)
-# ):
-#     style_id_list = json.loads(style_id_list)
-#     # 파일 확장자 검사
-#     if not allowed_file(image_upload.filename):
-#         raise HTTPException(status_code=415, detail="Unsupported file format")
-
-#     try:
-#         # 이미지를 PIL Image로 변환
-#         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
-        
-#         # 이미지 및 이미지 특징 처리
-#         segmented_image, image_feature = process_image_and_feature_by_app(image, category)
-        
-#         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
-#         original_image_byte_array = io.BytesIO()
-#         segmented_image_byte_array = io.BytesIO()
-        
-#         image.save(original_image_byte_array, format='PNG')
-#         segmented_image.save(segmented_image_byte_array, format='PNG')
-        
-#         original_image_base64 = base64.b64encode(original_image_byte_array.getvalue()).decode('utf-8')
-#         segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
-        
-#         # 이미지 특징을 JSON 형태로 반환
-#         # image_features_list = [feat.tolist() for feat in image_feature]
-        
-#         # 로그 남기기
-#         logging.info(f"Processed image: Input data: {category}, Image feature: {image_feature}")
-        
-#         # 유사한 이미지 검색 및 반환
-#         similar_images = find_similar_images(style_id_list, mall_type_id, category, image_feature, offset)
-        
-#         logging.info(f"Similar images: {similar_images}")
-        
-#         return JSONResponse(content={
-#             "original_image": original_image_base64,
-#             "segmented_condaimage": segmented_image_base64,
-#             "similar_images": similar_images
-#         })
-    
-#     except Exception as e:
-#         logging.error(f"Error processing image: {str(e)}")
-#         logging.error(traceback.format_exc())
-#         raise HTTPException(status_code=500, detail="Error processing image")
-    
-# without grounded-sam
 @app.post('/process/image')
 async def process_image(
     image_upload: UploadFile = File(...), 
-    category: str = Form(""),  # 빈 문자열 허용
+    category: str = Form(""),
     offset: int = Form(5),
-    style_id_list: str = Form(""),  # 빈 문자열 허용
+    style_id_list: str = Form(""),
     mall_type_id: str = Form(None)
 ):
     style_id_list = json.loads(style_id_list)
-    
     # 파일 확장자 검사
     if not allowed_file(image_upload.filename):
         raise HTTPException(status_code=415, detail="Unsupported file format")
@@ -126,17 +72,17 @@ async def process_image(
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
         # 이미지 및 이미지 특징 처리
-        image_feature = image_encoding(image)
+        segmented_image, image_feature = process_image_and_feature_by_app(image, category)
         
         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
         original_image_byte_array = io.BytesIO()
-        # segmented_image_byte_array = io.BytesIO()
+        segmented_image_byte_array = io.BytesIO()
         
         image.save(original_image_byte_array, format='PNG')
-        # segmented_image.save(segmented_image_byte_array, format='PNG')
+        segmented_image.save(segmented_image_byte_array, format='PNG')
         
         original_image_base64 = base64.b64encode(original_image_byte_array.getvalue()).decode('utf-8')
-        # segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
+        segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
         
         # 이미지 특징을 JSON 형태로 반환
         # image_features_list = [feat.tolist() for feat in image_feature]
@@ -151,7 +97,7 @@ async def process_image(
         
         return JSONResponse(content={
             "original_image": original_image_base64,
-            # "segmented_condaimage": segmented_image_base64,
+            "segmented_condaimage": segmented_image_base64,
             "similar_images": similar_images
         })
     
@@ -159,3 +105,57 @@ async def process_image(
         logging.error(f"Error processing image: {str(e)}")
         logging.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Error processing image")
+    
+# # without grounded-sam
+# @app.post('/process/image')
+# async def process_image(
+#     image_upload: UploadFile = File(...), 
+#     category: str = Form(""),  # 빈 문자열 허용
+#     offset: int = Form(5),
+#     style_id_list: str = Form(""),  # 빈 문자열 허용
+#     mall_type_id: str = Form(None)
+# ):
+#     style_id_list = json.loads(style_id_list)
+    
+#     # 파일 확장자 검사
+#     if not allowed_file(image_upload.filename):
+#         raise HTTPException(status_code=415, detail="Unsupported file format")
+
+#     try:
+#         # 이미지를 PIL Image로 변환
+#         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
+        
+#         # 이미지 및 이미지 특징 처리
+#         image_feature = image_encoding(image)
+        
+#         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
+#         original_image_byte_array = io.BytesIO()
+#         # segmented_image_byte_array = io.BytesIO()
+        
+#         image.save(original_image_byte_array, format='PNG')
+#         # segmented_image.save(segmented_image_byte_array, format='PNG')
+        
+#         original_image_base64 = base64.b64encode(original_image_byte_array.getvalue()).decode('utf-8')
+#         # segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
+        
+#         # 이미지 특징을 JSON 형태로 반환
+#         # image_features_list = [feat.tolist() for feat in image_feature]
+        
+#         # 로그 남기기
+#         logging.info(f"Processed image: Input data: {category}, Image feature: {image_feature}")
+        
+#         # 유사한 이미지 검색 및 반환
+#         similar_images = find_similar_images(style_id_list, mall_type_id, category, image_feature, offset)
+        
+#         logging.info(f"Similar images: {similar_images}")
+        
+#         return JSONResponse(content={
+#             "original_image": original_image_base64,
+#             # "segmented_condaimage": segmented_image_base64,
+#             "similar_images": similar_images
+#         })
+    
+#     except Exception as e:
+#         logging.error(f"Error processing image: {str(e)}")
+#         logging.error(traceback.format_exc())
+#         raise HTTPException(status_code=500, detail="Error processing image")
