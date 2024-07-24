@@ -44,15 +44,15 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     conditions = []
     params = [image_feature]  # image_feature는 함수 외부에서 전달받는 변수라고 가정합니다.
     
-    if mall_type_id is not None and category != "":
+    if mall_type_id is not None and category != "apparel":
         conditions.append("style_id IN %s")
         params.append(tuple(style_id_list))
-    elif mall_type_id is not None and category == "":
+    elif mall_type_id is not None and category == "apparel":
         conditions.append("mall_type_id = %s")
         params.append(mall_type_id)
 
     if conditions:
-        query += " WHERE " + " AND ".join(conditions)
+        query += "WHERE " + "AND ".join(conditions)
 
     query += """
     ORDER BY 
@@ -78,6 +78,7 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
         for row in similar_images:
             cdn_url, style_id, mall_type_id, distance = row
             if style_id not in seen_style_ids:
+                print(f'style_id: {style_id}')
                 seen_style_ids.add(style_id)
                 result = {
                     'cdn_url': cdn_url,
@@ -87,6 +88,7 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
                 }
                 results.append(result)
             if len(results) >= offset:
+                print(f'seen_style_ids: {seen_style_ids}')
                 break
         
         cursor.close()
