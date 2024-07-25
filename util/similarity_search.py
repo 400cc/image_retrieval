@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, Column, Text, String, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from googletrans import Translator
 from pgvector.sqlalchemy import Vector
 import logging
 from vector_base_uploader import get_pg_connection
@@ -67,11 +66,9 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
     conn_pg, tunnel = get_pg_connection()
     try:
         cursor = conn_pg.cursor()
-        translator = Translator()
-        translated_category = translator.translate(category, src='ko', dest='en')
-        query, params = build_filter(style_id_list, mall_type_id, image_feature, translated_category, offset)
-        logging.info("category : %s", translated_category)
-        logging.info("Executing query: %s with params: %s", query, params)
+        query, params = build_filter(style_id_list, mall_type_id, image_feature, category, offset)
+        logging.info("category : %s", category)
+        # logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
         similar_images = cursor.fetchall()
 
