@@ -10,6 +10,7 @@ import io, traceback
 import json
 import base64
 import logging
+from googletrans import Translator
 
 from util.extract_image_feature import process_image_and_feature_by_app
 from util.similarity_search import find_similar_images
@@ -71,8 +72,11 @@ async def process_image(
         # 이미지를 PIL Image로 변환
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
+        translator = Translator()
+        translated_category = translator.translate(category, src='ko', dest='en').text
+        print(f'translated_category: {translated_category}')
         # 이미지 및 이미지 특징 처리
-        segmented_image, image_feature = process_image_and_feature_by_app(image, category)
+        segmented_image, image_feature = process_image_and_feature_by_app(image, translated_category)
         
         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
         original_image_byte_array = io.BytesIO()
