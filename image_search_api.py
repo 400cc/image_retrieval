@@ -79,13 +79,13 @@ async def process_image(
         segmented_image, image_feature = process_image_and_feature_by_app(image, translated_category)
         
         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
-        original_image_byte_array = io.BytesIO()
+        # original_image_byte_array = io.BytesIO()
         segmented_image_byte_array = io.BytesIO()
         
-        image.save(original_image_byte_array, format='PNG')
+        # image.save(original_image_byte_array, format='PNG')
         segmented_image.save(segmented_image_byte_array, format='PNG')
         
-        original_image_base64 = base64.b64encode(original_image_byte_array.getvalue()).decode('utf-8')
+        # original_image_base64 = base64.b64encode(original_image_byte_array.getvalue()).decode('utf-8')
         segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
         
         # 이미지 특징을 JSON 형태로 반환
@@ -100,7 +100,7 @@ async def process_image(
         logging.info(f"Similar images: {similar_images}")
         
         return JSONResponse(content={
-            "original_image": original_image_base64,
+            # "original_image": original_image_base64,
             "segmented_condaimage": segmented_image_base64,
             "similar_images": similar_images
         })
