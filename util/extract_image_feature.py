@@ -58,7 +58,8 @@ ckpt_config_filename = "GroundingDINO_SwinB.cfg.py"
 
 groundingdino_model = load_model_hf(ckpt_repo_id, ckpt_filenmae, ckpt_config_filename)
 
-DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+DEVICE = input("device: ")
 sam_checkpoint = 'sam_vit_h_4b8939.pth'
 sam = build_sam(checkpoint=sam_checkpoint)
 sam.to(device=DEVICE)
