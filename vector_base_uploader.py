@@ -9,6 +9,7 @@ from sshtunnel import SSHTunnelForwarder
 from util.extract_image_feature import process_image_and_feature
 from util.mysql_db_util import get_db_connection, create_connection_pool
 from load_category_hierarchy import get_category_hierarchy, load_category_hierarchy
+import traceback
 
 config_path = 'util/mysql_config.json'
 connection_pool = create_connection_pool(config_path)
@@ -139,6 +140,21 @@ def load_cdn_urls():
     conn.close()
     return cdn_urls
 
+
+def process_categories(mall_type, categories):
+    processed_categories = []
+    for sublist in categories:
+        if mall_type == 'musinsa':
+            # musinsa일 때는 모든 요소를 ' '로 join
+            category = ' '.join(sublist)
+        elif mall_type in ['handsome', 'wconcept']:
+            # handsome과 wconcept일 때는 처음 두 요소만 ' '로 join
+            category = ' '.join(sublist[:2]) if len(sublist) >= 2 else ' '.join(sublist)
+        processed_categories.append(category)
+    
+    return ', '.join(processed_categories)  # 모든 처리된 카테고리를 ', '로 join
+
+
 def save_embeddings(mapped_dict):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
@@ -159,15 +175,21 @@ def save_embeddings(mapped_dict):
                 
                 # mapping_dict에서 style_id에 해당하는 category를 찾기
                 categories = mapped_dict.get(style_id, [])
-                category = ', '.join([' '.join(sublist) for sublist in categories])
-
+               
+                # category = ', '.join([' '.join(sublist) for sublist in categories])
+                # mall type에 따라 categories 처리 방식 변경
+                
+                category = process_categories(mall_type_name, categories)
+                
                 try:
                     vec = process_image_and_feature(cdn_url, category)
                 except Exception as e:
                     print(f'Error processing image: {e} - {cdn_url}')
+                    print("An error occurred:")
+                    traceback.print_exc()
                     continue
                 data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
-                print(f'category : {category}, {i}번째 완료')
+                print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
 
                 if len(data_to_insert) >= 100:
                     psycopg2.extras.execute_batch(cur, """
