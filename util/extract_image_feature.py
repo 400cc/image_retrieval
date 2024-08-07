@@ -69,19 +69,22 @@ model, preprocess = clip.load('ViT-L/14', device=DEVICE)
 
 # grounding DINO로 box detection
 def detect(image, text_prompt, model, image_source, box_threshold = 0.3, text_threshold = 0.25):
-  boxes, logits, phrases = predict(
-      model=model, 
-      image=image, 
-      caption=text_prompt,
-      box_threshold=box_threshold,
-      text_threshold=text_threshold,
-      device=DEVICE
-  )
-  
-  annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
-  annotated_frame = annotated_frame[...,::-1] # BGR to RGB 
 
-  return boxes, annotated_frame
+    boxes, logits, phrases = predict(
+        model=model, 
+        image=image, 
+        caption=text_prompt,
+        box_threshold=box_threshold,
+        text_threshold=text_threshold,
+        device=DEVICE
+    )
+
+  
+#   annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
+#   annotated_frame = annotated_frame[...,::-1] # BGR to RGB 
+
+#   return boxes, annotated_frame
+    return boxes
 
 
 # 얻은 박스를 프롬프트로 활용하여 SAM 적용
@@ -126,12 +129,12 @@ def apply_mask_to_image(image, mask):
 
 # grounded SAM pipeline
 def SAM(prompt, image, image_source):
-    detected_boxes, annotated_frame = detect(image, prompt, image_source=image_source, model=groundingdino_model)
+    detected_boxes = detect(image, prompt, image_source=image_source, model=groundingdino_model)
     # if detected_boxes.size(0) == 0:
     #     return image_source, None
     segmented_frame_masks = segment(image_source, sam_predictor, boxes=detected_boxes)
     masked_region_only = apply_mask_to_image(image_source, segmented_frame_masks[0][0])
-    return masked_region_only, annotated_frame
+    return masked_region_only
 
 
 def image_encoding(sam_image_result):
@@ -144,7 +147,7 @@ def image_encoding(sam_image_result):
 
 def process_image_and_feature_by_local(image_path, category):
     image_source, image = load_image(image_path)
-    sam_image, _ = SAM(category, image, image_source)
+    sam_image = SAM(category, image, image_source)
     sam_image_result = Image.fromarray(sam_image)
     image_feature = image_encoding(sam_image_result)
         
@@ -153,7 +156,7 @@ def process_image_and_feature_by_local(image_path, category):
 
 def process_image_and_feature(image_path, category):
     image_source, image = load_image_from_url(image_path)
-    sam_image, _ = SAM(category, image, image_source)
+    sam_image = SAM(category, image, image_source)
     sam_image_result = Image.fromarray(sam_image)
     image_feature = image_encoding(sam_image_result)
         
@@ -163,7 +166,7 @@ def process_image_and_feature(image_path, category):
 
 def process_image_and_feature_by_app(image_path, category):
     image_source, image = load_image_from_memory(image_path)
-    sam_image, _ = SAM(category, image, image_source)
+    sam_image = SAM(category, image, image_source)
     sam_image_result = Image.fromarray(sam_image)
     image_feature = image_encoding(sam_image_result)
         
