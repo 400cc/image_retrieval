@@ -56,9 +56,9 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     query += """
     ORDER BY 
         distance
-    LIMIT %s
+    LIMIT 100
     """
-    params.append(offset)
+    # params.append(offset)
     
     return query, params
 
