@@ -69,8 +69,8 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
         logging.info("category : %s", category)
         # logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
-        similar_images = cursor.fetchall().sorted(similar_images, key=lambda x: x[3])
-        
+        similar_images = sorted(cursor.fetchall(), key=lambda x: x[3])
+
         # 중복된 style_id 제거
         seen_style_ids = set()
         results = []
@@ -87,7 +87,7 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
                 results.append(result)
             if len(results) >= offset:
                 break
-        results = sorted(results, key=lambda x: x['distance'])
+
         cursor.close()
         return results
 
