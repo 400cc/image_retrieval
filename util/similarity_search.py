@@ -54,8 +54,6 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
         query += "WHERE " + " AND ".join(conditions)
 
     query += """
-    ORDER BY 
-        distance
     LIMIT 100
     """
     # params.append(offset)
@@ -71,8 +69,8 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
         logging.info("category : %s", category)
         # logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
-        similar_images = cursor.fetchall()
-
+        similar_images = cursor.fetchall().sorted(similar_images, key=lambda x: x[3])
+        
         # 중복된 style_id 제거
         seen_style_ids = set()
         results = []
