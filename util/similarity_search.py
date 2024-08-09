@@ -30,19 +30,18 @@ class ImageVector(Base):
     embedding = Column(Vector(768))
 
 def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
-    # 기본 쿼리
     query = """
     SELECT
         cdn_url,
         style_id,
         mall_type_id,
-        embedding <-> %s::vector AS distance
+        embedding <=> %s::vector AS distance
     FROM
         image_vector
     """
     
     conditions = []
-    params = [image_feature]  # image_feature는 함수 외부에서 전달받는 변수라고 가정합니다.
+    params = [image_feature]
     
     if mall_type_id is not None and category != "apparel":
         conditions.append("style_id IN %s")
@@ -52,15 +51,17 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
         params.append(mall_type_id)
 
     if conditions:
-        query += " WHERE " + " AND ".join(conditions)
+        query += "WHERE " + " AND ".join(conditions)
 
     query += """
     ORDER BY 
         distance
+    LIMIT %s
     """
-    # 쿼리에서 LIMIT는 제거합니다.
+    params.append(offset)
     
     return query, params
+
 
 def find_similar_images(style_id_list, mall_type_id, category, image_feature, offset=5):
     conn_pg, tunnel = get_pg_connection()
@@ -88,7 +89,7 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
                 results.append(result)
             if len(results) >= offset:
                 break
-        
+        results = sorted(results, key=lambda x: x['distance'])
         cursor.close()
         return results
 
