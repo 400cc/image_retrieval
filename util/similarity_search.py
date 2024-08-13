@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
 import logging
-from vector_base_uploader import get_pg_connection
+from util.pg_db_util import get_pg_connection
 
 # PostgreSQL 연결 정보
 DATABASE = {
