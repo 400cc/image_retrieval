@@ -1,6 +1,5 @@
-import psycopg2
-from sshtunnel import SSHTunnelForwarder
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -9,17 +8,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import io
 import base64
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from util.pg_db_util import get_pg_connection
 
 app = FastAPI()
-
-# 설정: Jinja2 템플릿 디렉토리
 templates = Jinja2Templates(directory="templates")
-
-# 선택적: 정적 파일 서빙 (예: CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 def fetch_embedding_list(conn):
     query = "SELECT embedding FROM image_vector"
@@ -46,15 +38,22 @@ def visualize_clusters(vectors_2d, clusters):
 class ClusterRequest(BaseModel):
     n_clusters: int
 
+@app.get("/")
+def index(request: Request):
+    return templates.TemplateResponse("result.html", {"request": request, "image": None})
+
 @app.post("/clustering")
-def cluster_and_visualize(request: ClusterRequest, req: Request):
+def cluster_and_visualize(request: Request, n_clusters: int):
     try:
+        if n_clusters < 3 or n_clusters % 2 == 0:
+            raise HTTPException(status_code=400, detail="Number of clusters must be an odd integer greater than or equal to 3.")
+        
         conn, tunnel = get_pg_connection()
         vectors = fetch_embedding_list(conn)
-        clusters = perform_clustering(vectors, request.n_clusters)
+        clusters = perform_clustering(vectors, n_clusters)
         vectors_2d = reduce_dimensions(vectors)
         img_str = visualize_clusters(vectors_2d, clusters)
-        return templates.TemplateResponse("result.html", {"request": req, "image": img_str})
+        return templates.TemplateResponse("result.html", {"request": request, "image": img_str})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
