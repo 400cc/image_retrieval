@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -12,6 +13,10 @@ from util.pg_db_util import get_pg_connection
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+
+# 설정 로그
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def fetch_embedding_list(conn):
     query = "SELECT embedding FROM image_vector"
@@ -42,13 +47,20 @@ def index(request: Request):
 @app.post("/clustering")
 def cluster_and_visualize(request: Request, n_clusters: int = Form(...)):
     try:
+        logger.info(f"Received request with n_clusters={n_clusters}")
+
         conn, tunnel = get_pg_connection()
         vectors = fetch_embedding_list(conn)
+
+        logger.info(f"Number of vectors fetched: {len(vectors)}")
+
         clusters = perform_clustering(vectors, n_clusters)
         vectors_2d = reduce_dimensions(vectors)
         img_str = visualize_clusters(vectors_2d, clusters)
+
         return templates.TemplateResponse("result.html", {"request": request, "image": img_str})
     except Exception as e:
+        logger.error(f"An error occurred: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         if conn:
