@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import pandas as pd
@@ -35,19 +35,13 @@ def visualize_clusters(vectors_2d, clusters):
     buf.seek(0)
     return base64.b64encode(buf.read()).decode('utf-8')
 
-class ClusterRequest(BaseModel):
-    n_clusters: int
-
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse("result.html", {"request": request, "image": None})
 
 @app.post("/clustering")
-def cluster_and_visualize(request: Request, n_clusters: int):
+def cluster_and_visualize(request: Request, n_clusters: int = Form(...)):
     try:
-        if n_clusters < 3 or n_clusters % 2 == 0:
-            raise HTTPException(status_code=400, detail="Number of clusters must be an odd integer greater than or equal to 3.")
-        
         conn, tunnel = get_pg_connection()
         vectors = fetch_embedding_list(conn)
         clusters = perform_clustering(vectors, n_clusters)
