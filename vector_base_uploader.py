@@ -78,6 +78,7 @@ def fetch_cdn_urls(batch_size: int = 1000):
     
     return all_cdn_urls
 
+
 def translate_category_names(category_names):
     translator = Translator()
     translated_dict = {}

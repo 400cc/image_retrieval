@@ -4,30 +4,40 @@ from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
 import logging
 from util.pg_db_util import get_pg_connection
+# from vector_base_uploader import get_pg_connection
 
 # PostgreSQL 연결 정보
-DATABASE = {
-    "dbname": "imagevector",
-    "user": "test",
-    "password": "5303",
-    "host": "localhost",
-    "port": 5432
-}
+# DATABASE = {
+#     "dbname": "imagevector",
+#     "user": "test",
+#     "password": "5303",
+#     "host": "localhost",
+#     "port": 5432
+# }
 
-# SQLAlchemy 엔진 생성
-DATABASE_URL = f"postgresql+psycopg2://{DATABASE['user']}:{DATABASE['password']}@{DATABASE['host']}:{DATABASE['port']}/{DATABASE['dbname']}"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# DATABASE = {
+#     "dbname": "image_vector",  # get_pg_connection 함수에서 사용한 dbname
+#     "user": "airflow",         # get_pg_connection 함수에서 사용한 user
+#     "password": "airflow",     # get_pg_connection 함수에서 사용한 password
+#     "host": "localhost",       # get_pg_connection 함수에서는 SSH 터널을 통해 연결하므로 localhost
+#     "port": 5432               # get_pg_connection 함수에서 사용한 포트
+# }
 
-# SQLAlchemy 베이스 모델 생성
-Base = declarative_base()
+# # SQLAlchemy 엔진 생성
+# DATABASE_URL = f"postgresql+psycopg2://{DATABASE['user']}:{DATABASE['password']}@{DATABASE['host']}:{DATABASE['port']}/{DATABASE['dbname']}"
 
-class ImageVector(Base):
-    __tablename__ = "image_vector"
-    style_id = Column(Text)
-    cdn_url = Column(Text, primary_key=True, index=True)
-    mall_type_id = Column(String(255))
-    embedding = Column(Vector(768))
+# engine = create_engine(DATABASE_URL)
+# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# # SQLAlchemy 베이스 모델 생성
+# Base = declarative_base()
+
+# class ImageVector(Base):
+#     __tablename__ = "image_vector"
+#     style_id = Column(Text)
+#     cdn_url = Column(Text, primary_key=True, index=True)
+#     mall_type_id = Column(String(255))
+#     embedding = Column(Vector(768))
 
 def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     query = """
@@ -51,12 +61,12 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
         params.append(mall_type_id)
 
     if conditions:
-        query += "WHERE " + " AND ".join(conditions)
-
+        query += " WHERE " + " AND ".join(conditions)
     query += """
-    LIMIT 100
+    ORDER BY 
+        distance
     """
-    # params.append(offset)
+    # 쿼리에서 LIMIT는 제거합니다.
     
     return query, params
 
@@ -69,8 +79,7 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
         logging.info("category : %s", category)
         # logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
-        similar_images = sorted(cursor.fetchall(), key=lambda x: x[3])
-
+        similar_images = cursor.fetchall()
         # 중복된 style_id 제거
         seen_style_ids = set()
         results = []
@@ -87,10 +96,10 @@ def find_similar_images(style_id_list, mall_type_id, category, image_feature, of
                 results.append(result)
             if len(results) >= offset:
                 break
-
+        
         cursor.close()
         return results
-
+    
     finally:
         conn_pg.close()
         tunnel.close()
