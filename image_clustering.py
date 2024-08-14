@@ -1,4 +1,5 @@
 import logging
+import json
 from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -18,10 +19,15 @@ templates = Jinja2Templates(directory="templates")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+
 def fetch_embedding_list(conn):
     query = "SELECT embedding FROM image_vector"
     df = pd.read_sql(query, conn)
-    return df['embedding'].tolist()
+    # embedding 열의 각 항목을 파이썬 리스트로 변환
+    embeddings = df['embedding'].apply(json.loads)
+    return embeddings.tolist()
+
 
 def perform_clustering(vectors, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
