@@ -4,40 +4,17 @@ from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
 import logging
 from util.pg_db_util import get_pg_connection
-# from vector_base_uploader import get_pg_connection
 
-# PostgreSQL 연결 정보
-# DATABASE = {
-#     "dbname": "imagevector",
-#     "user": "test",
-#     "password": "5303",
-#     "host": "localhost",
-#     "port": 5432
-# }
 
-# DATABASE = {
-#     "dbname": "image_vector",  # get_pg_connection 함수에서 사용한 dbname
-#     "user": "airflow",         # get_pg_connection 함수에서 사용한 user
-#     "password": "airflow",     # get_pg_connection 함수에서 사용한 password
-#     "host": "localhost",       # get_pg_connection 함수에서는 SSH 터널을 통해 연결하므로 localhost
-#     "port": 5432               # get_pg_connection 함수에서 사용한 포트
-# }
+# SQLAlchemy 베이스 모델 생성
+Base = declarative_base()
 
-# # SQLAlchemy 엔진 생성
-# DATABASE_URL = f"postgresql+psycopg2://{DATABASE['user']}:{DATABASE['password']}@{DATABASE['host']}:{DATABASE['port']}/{DATABASE['dbname']}"
-
-# engine = create_engine(DATABASE_URL)
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# # SQLAlchemy 베이스 모델 생성
-# Base = declarative_base()
-
-# class ImageVector(Base):
-#     __tablename__ = "image_vector"
-#     style_id = Column(Text)
-#     cdn_url = Column(Text, primary_key=True, index=True)
-#     mall_type_id = Column(String(255))
-#     embedding = Column(Vector(768))
+class ImageVector(Base):
+    __tablename__ = "image_vector"
+    style_id = Column(Text)
+    cdn_url = Column(Text, primary_key=True, index=True)
+    mall_type_id = Column(String(255))
+    embedding = Column(Vector(768))
 
 def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     query = """
@@ -63,8 +40,8 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
     query += """
-    ORDER BY 
-        distance
+    ORDER BY distance
+    LIMIT 100
     """
     # 쿼리에서 LIMIT는 제거합니다.
     
