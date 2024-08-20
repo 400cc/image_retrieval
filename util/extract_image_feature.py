@@ -1,12 +1,9 @@
-import argparse
 import os
-import copy
 import sys
 
 import numpy as np
 import torch
-from PIL import Image, ImageDraw, ImageFont
-from torchvision.ops import box_convert
+from PIL import Image
 
 # Grounding DINO
 import GroundingDINO.groundingdino.datasets.transforms as T
@@ -16,11 +13,8 @@ from GroundingDINO.groundingdino.util.slconfig import SLConfig
 from GroundingDINO.groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
 from GroundingDINO.groundingdino.util.inference import annotate, load_image, load_image_from_memory, load_image_from_url, predict
 
-import supervision as sv
-
 # segment anything
 base_path = os.path.join(os.path.dirname(__file__), "segment-anything")
-
 
 # 경로를 sys.path에 추가
 if base_path not in sys.path:
@@ -78,12 +72,7 @@ def detect(image, text_prompt, model, image_source, box_threshold = 0.3, text_th
         text_threshold=text_threshold,
         device=DEVICE
     )
-
-  
-#   annotated_frame = annotate(image_source=image_source, boxes=boxes, logits=logits, phrases=phrases)
-#   annotated_frame = annotated_frame[...,::-1] # BGR to RGB 
-
-#   return boxes, annotated_frame
+    
     return boxes
 
 
@@ -153,7 +142,7 @@ def process_image_and_feature_by_local(image_path, category):
         
     return sam_image_result, image_feature
 
-
+# cdn url 통해서
 def process_image_and_feature(image_path, category):
     image_source, image = load_image_from_url(image_path)
     sam_image = SAM(category, image, image_source)
@@ -163,7 +152,7 @@ def process_image_and_feature(image_path, category):
     return image_feature
 
 
-
+# 웹에서 입력받은 이미지
 def process_image_and_feature_by_app(image_path, category):
     image_source, image = load_image_from_memory(image_path)
     sam_image = SAM(category, image, image_source)
@@ -172,14 +161,3 @@ def process_image_and_feature_by_app(image_path, category):
         
     return sam_image_result, image_feature
 
-
-# def process_image_and_feature_by_app(image_path, category):
-#     image_source, image = load_image_from_memory(image_path)
-#     sam_image, _ = SAM(category, image, image_source)
-#     sam_image_result = Image.fromarray(sam_image)
-#     with torch.no_grad():
-#         preprocessed_image = preprocess(sam_image_result).unsqueeze(0).to(DEVICE)
-#         image_features = model.encode_image(preprocessed_image)
-#         image_feature = image_features[0].cpu().numpy().tolist()
-        
-#     return sam_image_result, image_feature

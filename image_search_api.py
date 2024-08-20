@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from typing import List, Optional
 from pydantic import BaseModel
-from util.extract_image_feature import process_image_and_feature
+from util.extract_image_feature import process_image_and_feature, process_image_and_feature_by_app
 from PIL import Image
 import io, traceback
 import json
@@ -12,7 +12,6 @@ import base64
 import logging
 from googletrans import Translator
 
-from util.extract_image_feature import process_image_and_feature_by_app
 from util.similarity_search import find_similar_images
 from util.extract_image_feature import image_encoding
 
@@ -41,7 +40,6 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
     
-#TODO - 성호형컴: Airflow 이미지 수집 후 벡터화 응답
 @app.post("/") 
 async def process_lists(request : Image_url_category):
     vectorized_result_list = []
