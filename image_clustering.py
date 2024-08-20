@@ -43,15 +43,6 @@ def reduce_dimensions(vectors, n_components=2):
     reducer = umap.UMAP(n_components=n_components, random_state=42)
     return reducer.fit_transform(vectors)
 
-# def visualize_clusters(vectors_2d, clusters):
-#     plt.figure(figsize=(10, 8))
-#     sns.scatterplot(x=vectors_2d[:, 0], y=vectors_2d[:, 1], hue=clusters, palette="viridis")
-#     plt.title("2D Visualization of Clusters")
-#     buf = io.BytesIO()
-#     plt.savefig(buf, format='png')
-#     buf.seek(0)
-#     return base64.b64encode(buf.read()).decode('utf-8')
-
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse("result.html", {"request": request, "image": None})
