@@ -71,7 +71,8 @@ def fetch_cdn_urls(batch_size: int = 1000):
         
         all_cdn_urls.extend([row[0] for row in rows])
         offset += batch_size
-        print(f"{offset}개의 URL을 불러왔습니다.")
+        
+    print(f"{offset}개의 URL을 불러왔습니다.")
     
     cursor.close()
     conn.close()
@@ -187,9 +188,9 @@ def save_embeddings(mapped_dict):
 
 if __name__ == '__main__':
     category_names = load_category_names()
-    print('완료')
+    print('category load')
     translated_dict = translate_category_name(category_names)
-    print('완료2') 
+    print('category translation') 
     mapped_dict = mapping_translated_category(translated_dict)
-    print('완료3')
+    print('category mapping')
     save_embeddings(mapped_dict)
