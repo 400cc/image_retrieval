@@ -57,29 +57,25 @@ wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 ![image](https://github.com/user-attachments/assets/6736a010-d5d8-4c23-8e30-6f38dc522b77)
 
 
-### GroundingDINO 수정
-GroundingDINO\groundingdino\util\inference.py 파일에 다음과 같은 함수를 추가해줍니다.
-```python
-def load_image_from_memory(image_source: Image.Image) -> Tuple[np.ndarray, torch.Tensor]:
-    transform = T.Compose(
-        [
-            T.RandomResize([800], max_size=1333),
-            T.ToTensor(),
-            T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ]
-    )
-    
-    # 이미지를 numpy 배열로 변환
-    image = np.asarray(image_source)
-    
-    # 변환된 이미지를 텐서로 변환
-    image_transformed, _ = transform(image_source, None)
-    
-    return image, image_transformed
-```
 
 ### API 실행
 다음과 같은 코드로 FastAPI를 실행합니다.
 ```
 uvicorn image_search_api:app
 ```
+
+<br><br>
+![alt text](assets/image-device.png)
+
+실행하면 터미널에서 사용할 gpu를 입력할 수 있습니다. 'cuda:0' 형식 활용하시면 될 것 같습니다.
+
+<br>
+
+
+### vector_base_uploader.py
+현재 cdn에 저장된 이미지들을 불러와서 GroundedSAM -> Embedding -> DB에 삽입하는 파일입니다. 아래처럼 실행해주시면 되고, 위와 마찬가지로 실행 시 device 입력해주셔야 합니다. 
+```
+python vector_base_uploader.py
+```
+
+*TODO* : 다량의 한섬 이미지를 임베딩 할 때 GroundingDINO 파트에서 에러가 발생하고 있습니다. 에러가 나는 이미지 일부를 노트북 파일에서 똑같이 실행하여 에러를 추적하고자 하였으나 노트북 파일에서 실행할 땐 에러 없이 bbox 탐지를 잘 해줘서, 아직 정확한 원인을 파악하지 못한 상태입니다.
