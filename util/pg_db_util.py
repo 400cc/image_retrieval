@@ -5,7 +5,7 @@ def get_pg_connection():
     ssh_host = '54.180.146.236'
     ssh_port = 22
     ssh_user = 'ubuntu'
-    ssh_private_key = "/root/400cc/image_searching/aws.ac.kwu.pem"
+    ssh_private_key = "/app/aws.ac.kwu.pem"
 
     pg_host = '127.0.0.1'
     pg_port = 5432
