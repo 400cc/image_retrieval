@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y wget libgl1-mesa-glx
 
 RUN wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
+COPY /root/400cc/image_searching/aws.ac.kwu.pem /app/aws.ac.kwu.pem
+
 COPY GroundingDINO/ GroundingDINO/
 COPY segment-anything/ segment-anything/
 COPY util/ util/
