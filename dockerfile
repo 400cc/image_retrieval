@@ -1,7 +1,7 @@
-# FROM python:3.8.19
-# FROM python:3.9
+# 사용할 베이스 이미지
 FROM nvidia/cuda:12.3.1-base-ubuntu22.04
 
+# 필요한 패키지 설치
 RUN apt-get update && apt-get install -y \
     python3.10 \
     python3-pip \
@@ -20,35 +20,44 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+# 작업 디렉토리 설정
 WORKDIR /app
 
+# 파이썬 패키지 관리자 업그레이드
 RUN python3.10 -m pip install --upgrade pip
 
+# 의존성 파일 복사
 COPY requirements.txt .
 
+# PyTorch 설치
 RUN pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu123
 
+# 나머지 파이썬 의존성 설치
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN apt-get update && apt-get install -y wget libgl1-mesa-glx
-
+# SAM 모델 파일 다운로드
 RUN wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
+# 필요한 파일 및 디렉토리 복사
 COPY aws.ac.kwu.pem /app/aws.ac.kwu.pem
-
 COPY GroundingDINO/ GroundingDINO/
 COPY segment-anything/ segment-anything/
 COPY util/ util/
 COPY image_search_api.py .
 
+# GroundingDINO 설정
 WORKDIR /app/GroundingDINO
 RUN python3 setup.py build_ext --inplace
 
+# 루트 디렉토리로 돌아가기
 WORKDIR /app
 
+# 로컬 Python 모듈 설치
 RUN pip install --no-cache-dir -e segment-anything
 RUN pip install --no-cache-dir -e GroundingDINO
 
+# 서비스 포트 노출
 EXPOSE 8000
 
+# 서버 실행 명령
 CMD ["uvicorn", "image_search_api:app", "--host", "0.0.0.0", "--port", "8000"]
