@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+ENV PATH /usr/local/cuda/bin:$PATH
+
 # 작업 디렉토리 설정
 WORKDIR /app
 
