@@ -11,10 +11,10 @@ import json
 import base64
 import logging
 from googletrans import Translator
-import sys
-import os
+# import sys
+# import os
 
-sys.path.append('/app/GroundingDINO/groundingdino')
+# sys.path.append('/app/GroundingDINO/groundingdino')
 from util.similarity_search import find_similar_images
 from util.extract_image_feature import image_encoding
 

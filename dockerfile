@@ -51,17 +51,18 @@ COPY segment-anything/ segment-anything/
 COPY util/ util/
 COPY image_search_api.py .
 
-# GroundingDINO 설정
-WORKDIR /app/GroundingDINO
-RUN python3 setup.py build_ext --inplace
 ENV LD_LIBRARY_PATH=/app/GroundingDINO:$LD_LIBRARY_PATH
-
-# 루트 디렉토리로 돌아가기
-WORKDIR /app
 
 # 로컬 Python 모듈 설치
 RUN pip install --no-cache-dir -e segment-anything
 RUN pip install --no-cache-dir -e GroundingDINO
+
+# GroundingDINO 설정
+WORKDIR /app/GroundingDINO
+RUN python3 setup.py build_ext --inplace
+
+# 루트 디렉토리로 돌아가기
+WORKDIR /app
 
 # 서비스 포트 노출
 EXPOSE 8000
