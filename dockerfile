@@ -42,6 +42,8 @@ COPY image_search_api.py .
 WORKDIR /app/GroundingDINO
 RUN python3 setup.py build_ext --inplace
 
+WORKDIR /app
+
 RUN pip install --no-cache-dir -e segment-anything
 RUN pip install --no-cache-dir -e GroundingDINO
 
