@@ -1,22 +1,22 @@
 # FROM python:3.8.19
 # FROM python:3.9
-FROM nvidia/cuda:12.2.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:11.3-cudnn8-runtime-ubuntu20.04
 
 RUN apt-get update && apt-get install -y \
-    python3.9 \
+    python3.8 \
     python3-pip \
     wget \
-    libgl1-mesa-glx
+    libgl1-mesa-glx \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+RUN python3.8 -m pip install --upgrade pip
+
 COPY requirements.txt .
 
-
-RUN python3.9 -m pip install --upgrade pip
-RUN pip install torch==2.1.0+cu122 torchvision==0.16.0+cu122 torchaudio==2.1.0+cu122 --extra-index-url https://download.pytorch.org/whl/cu122
-
-RUN pip install --upgrade pip
+RUN pip install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio==0.10.0+cu113 \
+    --extra-index-url https://download.pytorch.org/whl/cu113
 
 RUN pip install --no-cache-dir -r requirements.txt
 
