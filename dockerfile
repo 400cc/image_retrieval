@@ -20,8 +20,6 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-RUN g++ -o myapplication main.cpp -lboost_system
-
 RUN python3.10 -m pip install --upgrade pip
 
 COPY requirements.txt .
