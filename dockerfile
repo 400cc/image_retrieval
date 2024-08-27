@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 ENV PATH /usr/local/cuda/bin:$PATH
+ENV PYTHONPATH="/app/GroundingDINO/groundingdino:$PYTHONPATH"
+
 
 # 작업 디렉토리 설정
 WORKDIR /app
