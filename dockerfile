@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-FROM nvidia/cuda:12.2.0-cudnn8-devel-ubuntu22.04
+# FROM nvidia/cuda:12.2.0-cudnn8-devel-ubuntu22.04
 RUN python3.9 -m pip install --upgrade pip
 RUN pip install torch==2.1.0+cu122 torchvision==0.16.0+cu122 torchaudio==2.1.0+cu122 --extra-index-url https://download.pytorch.org/whl/cu122
 
