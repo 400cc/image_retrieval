@@ -6,6 +6,10 @@ RUN apt-get update && apt-get install -y \
     python3.10 \
     python3-pip \
     libpq-dev \
+    libboost-all-dev \
+    make \
+    g++ \
+    cmake \
     wget \
     libgl1-mesa-glx \
     libglib2.0-0 \
@@ -14,6 +18,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 WORKDIR /app
+
+RUN g++ -o myapplication main.cpp -lboost_system
 
 RUN python3.10 -m pip install --upgrade pip
 
