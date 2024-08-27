@@ -17,7 +17,7 @@ pandas==2.0.3
 paramiko==3.4.0
 pgvector==0.3.0
 Pillow==10.4.0
-psycopg2==2.9.9
+psycopg2-binary==2.9.9
 pycocotools==2.0.7
 pydantic==2.8.2
 PyYAML==6.0.2

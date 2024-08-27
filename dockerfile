@@ -5,8 +5,10 @@ FROM nvidia/cuda:12.3.1-base-ubuntu22.04
 RUN apt-get update && apt-get install -y \
     python3.10 \
     python3-pip \
+    libpq-dev \
     wget \
     libgl1-mesa-glx \
+    python3.10-dev \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
