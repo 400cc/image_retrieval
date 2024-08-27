@@ -51,7 +51,7 @@ COPY segment-anything/ segment-anything/
 COPY util/ util/
 COPY image_search_api.py .
 
-ENV LD_LIBRARY_PATH=/app/GroundingDINO:$LD_LIBRARY_PATH
+# ENV LD_LIBRARY_PATH=/app/GroundingDINO:$LD_LIBRARY_PATH
 
 # 로컬 Python 모듈 설치
 RUN pip install --no-cache-dir -e segment-anything
