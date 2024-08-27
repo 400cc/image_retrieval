@@ -7,10 +7,11 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     libpq-dev \
     libboost-all-dev \
-    make \
-    g++ \
-    cmake \
+    ninja-build \
     wget \
+    libsm6 \
+    libxrender1 \
+    libxext6 \
     libgl1-mesa-glx \
     libglib2.0-0 \
     python3.10-dev \
@@ -39,6 +40,9 @@ COPY GroundingDINO/ GroundingDINO/
 COPY segment-anything/ segment-anything/
 COPY util/ util/
 COPY image_search_api.py .
+
+WORKDIR /app/GroundingDINO
+RUN python3 setup.py build_ext --inplace
 
 RUN pip install --no-cache-dir -e segment-anything
 RUN pip install --no-cache-dir -e GroundingDINO
