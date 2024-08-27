@@ -1,5 +1,5 @@
 # 사용할 베이스 이미지
-FROM nvidia/cuda:12.3.1-base-ubuntu22.04
+FROM nvidia/cuda:12.3.1-devel-ubuntu22.04
 
 # 필요한 패키지 설치
 RUN apt-get update && apt-get install -y \
