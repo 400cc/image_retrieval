@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     wget \
     libgl1-mesa-glx \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 WORKDIR /app
 
@@ -15,7 +16,7 @@ RUN python3.10 -m pip install --upgrade pip
 
 COPY requirements.txt .
 
-RUN pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu123
+RUN pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu123
 
 RUN pip install --no-cache-dir -r requirements.txt
 
