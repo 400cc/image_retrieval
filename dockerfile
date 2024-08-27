@@ -5,12 +5,11 @@ FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
 WORKDIR /app
 
 # Python과 pip 설치
-RUN apt-get update && apt-get install -y python3 python3-pip wget libgl1-mesa-glx
+RUN pip install --upgrade pip
 
-# requirements.txt 복사 및 필요한 Python 패키지 설치
-COPY requirements.txt .
-RUN pip3 install --upgrade pip && \
-    pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN apt-get update && apt-get install -y wget libgl1-mesa-glx
 
 # 모델 파일 다운로드
 RUN wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
