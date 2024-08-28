@@ -25,7 +25,6 @@ RUN apt-get update && apt-get install -y \
 ENV PATH /usr/local/cuda/bin:$PATH
 
 
-
 # 작업 디렉토리 설정
 WORKDIR /app
 
@@ -51,21 +50,24 @@ COPY segment-anything/ segment-anything/
 COPY util/ util/
 COPY image_search_api.py .
 
-# ENV LD_LIBRARY_PATH=/app/GroundingDINO:$LD_LIBRARY_PATH
+
+# 루트 디렉토리로 돌아가기
+WORKDIR /app
 
 # 로컬 Python 모듈 설치
 RUN pip install --no-cache-dir -e segment-anything
 RUN pip install --no-cache-dir -e GroundingDINO
 
 # GroundingDINO 설정
+ENV LD_LIBRARY_PATH=/app/GroundingDINO:$LD_LIBRARY_PATH
 WORKDIR /app/GroundingDINO
 RUN python3 setup.py build_ext --inplace
 
-# 루트 디렉토리로 돌아가기
-WORKDIR /app
 
 # 서비스 포트 노출
 EXPOSE 8000
 
 # 서버 실행 명령
-CMD ["uvicorn", "image_search_api:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "image_search_api:app", "--host", "0.0.0.0", "--port", "8000"]
+
+CMD cd /app/GroundingDINO && python3 setup.py build_ext --inplace && cd /app && uvicorn image_search_api:app --host 0.0.0.0 --port 8000
