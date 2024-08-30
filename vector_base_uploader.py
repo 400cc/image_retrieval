@@ -10,6 +10,7 @@ from util.extract_image_feature import process_image_and_feature
 from util.mysql_db_util import get_db_connection, create_connection_pool
 from load_category_hierarchy import get_category_hierarchy, load_category_hierarchy
 import traceback
+import gc
 from util.pg_db_util import get_pg_connection
 config_path = 'util/mysql_config.json'
 connection_pool = create_connection_pool(config_path)
@@ -120,17 +121,26 @@ def process_categories(mall_type, categories):
             # musinsa일 때는 모든 요소를 ' '로 join
             category = ' '.join(sublist)
         elif mall_type in ['handsome', 'wconcept']:
+            if 'Capsule Collection*' in sublist: 
+                continue  # 캡슐컬렉션인 계층도는 빼버림
             # handsome과 wconcept일 때는 처음 두 요소만 ' '로 join
             category = ' '.join(sublist[:2]) if len(sublist) >= 2 else ' '.join(sublist)
         processed_categories.append(category)
+        
+    # 모든 처리된 카테고리를 ', '로 join
+    final_category = ', '.join(processed_categories)
     
-    return ', '.join(processed_categories)  # 모든 처리된 카테고리를 ', '로 join
+    if not final_category:  # final_category가 빈 문자열이면 'apparel'로 지정
+        final_category = 'apparel'
+        
+    return final_category  
 
 
 def save_embeddings(mapped_dict):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
     all_cdn_urls = fetch_cdn_urls()
+    all_cdn_urls.reverse()
     
     conn_pg, tunnel = get_pg_connection()
     conn_pg.autocommit = True
@@ -156,9 +166,9 @@ def save_embeddings(mapped_dict):
                 try:
                     vec = process_image_and_feature(cdn_url, category)
                 except Exception as e:
-                    print(f'Error processing image: {e} - {cdn_url}')
-                    print("An error occurred:")
-                    traceback.print_exc()
+                    print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
+                    # print("An error occurred:")
+                    # traceback.print_exc()
                     continue
                 data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
                 print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
@@ -171,6 +181,7 @@ def save_embeddings(mapped_dict):
                     """, data_to_insert)
                     conn_pg.commit()
                     print('100개 아이템 데이터베이스에 삽입 완료')
+                    gc.collect()
                     data_to_insert = []
 
         if data_to_insert:
