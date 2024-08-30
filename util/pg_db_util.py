@@ -1,23 +1,20 @@
-import psycopg2
+import json
 from sshtunnel import SSHTunnelForwarder
+import psycopg2
 
 def get_pg_connection():
-    ssh_host = '54.180.146.236'
-    ssh_port = 22
-    ssh_user = 'ubuntu'
-    ssh_private_key = "/app/aws.ac.kwu.pem"
-
-    pg_host = '127.0.0.1'
-    pg_port = 5432
-    pg_user = 'airflow'
-    pg_password = 'airflow'
-    pg_db = 'image_vector'
+    # Load configuration from pg_config.json
+    with open('pg_config.json', 'r') as config_file:
+        config = json.load(config_file)
+    
+    ssh_config = config['ssh']
+    pg_config = config['postgres']
 
     tunnel = SSHTunnelForwarder(
-        (ssh_host, ssh_port),
-        ssh_username=ssh_user,
-        ssh_private_key=ssh_private_key,
-        remote_bind_address=(pg_host, pg_port),
+        (ssh_config['host'], ssh_config['port']),
+        ssh_username=ssh_config['user'],
+        ssh_private_key=ssh_config['private_key'],
+        remote_bind_address=(pg_config['host'], pg_config['port']),
         local_bind_address=('localhost', 5432)
     )
     tunnel.start()
@@ -25,8 +22,8 @@ def get_pg_connection():
     conn_pg = psycopg2.connect(
         host='localhost',
         port=tunnel.local_bind_port,
-        user=pg_user,
-        password=pg_password,
-        dbname=pg_db
+        user=pg_config['user'],
+        password=pg_config['password'],
+        dbname=pg_config['db']
     )
     return conn_pg, tunnel
