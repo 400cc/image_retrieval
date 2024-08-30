@@ -39,8 +39,14 @@ def perform_clustering(vectors, n_clusters):
     clusters = kmeans.fit_predict(vectors)
     return clusters
 
-def reduce_dimensions(vectors, n_components=2):
-    reducer = umap.UMAP(n_components=n_components, random_state=42)
+def reduce_dimensions(vectors, n_neighbors=10, min_dist=0.1, n_jobs=-1, learning_rate=1.0):
+    reducer = umap.UMAP(
+        n_components=2,
+        n_neighbors=n_neighbors,
+        min_dist=min_dist,
+        n_jobs=n_jobs,
+        learning_rate=learning_rate
+    )
     return reducer.fit_transform(vectors)
 
 @app.get("/")
