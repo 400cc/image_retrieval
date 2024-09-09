@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def fetch_embedding_list(conn, style_id_list: List[str]):
     query = """
-    SELECT DISTINCT ON (style_id) style_id, embedding, url
+    SELECT DISTINCT ON (style_id) style_id, embedding, cdn_url
     FROM image_vector
     WHERE style_id IN %s
     """
@@ -24,7 +24,7 @@ def fetch_embedding_list(conn, style_id_list: List[str]):
     vectors = np.array(embeddings.tolist(), dtype=np.float32)
     
     style_ids = df['style_id'].tolist()
-    urls = df['url'].tolist()
+    urls = df['cdn_url'].tolist()
     
     return vectors, style_ids, urls
 
