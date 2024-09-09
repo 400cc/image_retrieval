@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def fetch_embedding_list(conn, style_id_list: List[str]):
     query = """
-    SELECT DISTINCT ON (style_id) style_id, embedding, url
+    SELECT DISTINCT ON (style_id) style_id, embedding, cdn_url
     FROM image_vector
     ORDER BY style_id, created_at ASC
     """
