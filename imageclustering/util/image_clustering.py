@@ -13,14 +13,19 @@ logger = logging.getLogger(__name__)
 
 def fetch_embedding_list(conn, style_id_list: List[str]):
     query = """
-    SELECT DISTINCT ON (style_id) style_id, embedding, cdn_url
+    SELECT DISTINCT ON (style_id) style_id, embedding, url
     FROM image_vector
+    WHERE style_id IN %s
     """
-    df = pd.read_sql(query, conn, params=(style_id_list,))
+    
+    df = pd.read_sql(query, conn, params=(tuple(style_id_list),))
+    
     embeddings = df['embedding'].apply(json.loads)
     vectors = np.array(embeddings.tolist(), dtype=np.float32)
+    
     style_ids = df['style_id'].tolist()
     urls = df['url'].tolist()
+    
     return vectors, style_ids, urls
 
 def perform_clustering(vectors: np.ndarray, n_clusters: int) -> np.ndarray:
