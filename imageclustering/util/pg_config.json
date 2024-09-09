@@ -1,0 +1,15 @@
+{
+    "ssh": {
+        "host": "54.180.146.236",
+        "port": 22,
+        "user": "ubuntu",
+        "private_key": "/app/aws.ac.kwu.pem"
+    },
+    "postgres": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "user": "airflow",
+        "password": "airflow",
+        "db": "image_vector"
+    }
+}
