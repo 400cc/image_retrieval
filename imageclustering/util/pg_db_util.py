@@ -4,7 +4,7 @@ import psycopg2
 
 def get_pg_connection():
     # Load configuration from pg_config.json
-    with open('pg_config.json', 'r') as config_file:
+    with open('util/pg_config.json', 'r') as config_file:
         config = json.load(config_file)
     
     ssh_config = config['ssh']
