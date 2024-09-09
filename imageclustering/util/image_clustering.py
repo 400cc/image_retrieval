@@ -15,7 +15,6 @@ def fetch_embedding_list(conn, style_id_list: List[str]):
     query = """
     SELECT DISTINCT ON (style_id) style_id, embedding, cdn_url
     FROM image_vector
-    ORDER BY style_id ASC
     """
     df = pd.read_sql(query, conn, params=(style_id_list,))
     embeddings = df['embedding'].apply(json.loads)
