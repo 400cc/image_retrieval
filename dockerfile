@@ -48,7 +48,7 @@ COPY aws.ac.kwu.pem /app/aws.ac.kwu.pem
 COPY GroundingDINO/ GroundingDINO/
 COPY segment-anything/ segment-anything/
 COPY util/ util/
-COPY image_search_api.py .
+COPY main.py .
 
 
 # 루트 디렉토리로 돌아가기
@@ -68,6 +68,6 @@ RUN python3 setup.py build_ext --inplace
 EXPOSE 8000
 
 # 서버 실행 명령
-# CMD ["uvicorn", "image_search_api:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-CMD cd /app/GroundingDINO && python3 setup.py build_ext --inplace && cd /app && uvicorn image_search_api:app --host 0.0.0.0 --port 8000
+CMD cd /app/GroundingDINO && python3 setup.py build_ext --inplace && cd /app && uvicorn main:app --host 0.0.0.0 --port 8000

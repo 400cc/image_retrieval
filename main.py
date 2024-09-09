@@ -1,31 +1,30 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Request
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel
-from util.extract_image_feature import process_image_and_feature, process_image_and_feature_by_app
 from PIL import Image
 import io, traceback
 import json
 import base64
 import logging
 from googletrans import Translator
-# import sys
-# import os
 
-# sys.path.append('/app/GroundingDINO/groundingdino')
+from pydantic import BaseModel
+
+from util.image_clustering import cluster_and_reduce
+from util.extract_image_feature import process_image_and_feature_by_app
 from util.similarity_search import find_similar_images
-from util.extract_image_feature import image_encoding
 
-# 로깅 설정
-logging.basicConfig(level=logging.INFO)  # 로그 레벨 설정 (INFO 이상만 출력)
-
-class Image_url_category(BaseModel):
-    image_url_list: List[str]
-    category_list : List[str]
-    
 app = FastAPI()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ClusteringRequest(BaseModel):
+    style_id_list: List[str]
+    n_clusters: int
+
 
 # 이미지 업로드를 위한 설정
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -34,17 +33,17 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
     
-@app.post("/") 
-async def process_lists(request : Image_url_category):
-    vectorized_result_list = []
+
+@app.post("/clustering")
+def process_clustering(request: ClusteringRequest):
     try:
-        for index in range(len(request.image_url_list)):
-            vectorized_result = process_image_and_feature(request.image_url_list[index], request.category_list[index])
-            vectorized_result_list.append(vectorized_result)
-    except Exception as e:  
-        return HTTPException(status_code=400, detail=str(e))
+        logger.info(f"Received clustering request: {request}")
+        data_points = cluster_and_reduce(request.style_id_list, request.n_clusters)
+        return {"data_points": data_points}
     
-    return {"vectorized_response" : vectorized_result_list}
+    except Exception as e:
+        logger.error(f"An error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post('/process/image')
