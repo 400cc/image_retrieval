@@ -11,10 +11,10 @@ from util.pg_db_util import get_pg_connection
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def fetch_embedding_list(conn, mall_type_id: str, category_list: List[str]):
+def fetch_embedding_list(conn, mall_type_id: str, category_list: List[int]):
 
     query = """
-    SELECT DISTINCT ON (style_id) style_id, embedding, cdn_url
+    SELECT DISTINCT ON (style_id) i.style_id, i.embedding, i.cdn_url
     FROM image_vector i
     JOIN category_style c ON i.style_id = c.style_id
     """
@@ -53,7 +53,7 @@ def reduce_dimensions(vectors: np.ndarray, n_neighbors=10, min_dist=0.1, n_jobs=
     )
     return reducer.fit_transform(vectors)
 
-def cluster_and_reduce(n_clusters: int, mall_type_id: str, category_list: List[str]):
+def cluster_and_reduce(n_clusters: int, mall_type_id: str, category_list: List[int]):
     conn, tunnel = get_pg_connection()
     try:
         vectors, style_ids, urls = fetch_embedding_list(conn, mall_type_id, category_list)

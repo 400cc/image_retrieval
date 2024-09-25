@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class ClusteringRequest(BaseModel):
     mall_type_id: str
-    category_list: List[str]
+    category_list: List[int]
     n_clusters: int
 
 
