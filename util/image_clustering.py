@@ -11,14 +11,24 @@ from util.pg_db_util import get_pg_connection
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def fetch_embedding_list(conn, style_id_list: List[str]):
+def fetch_embedding_list(conn, mall_type_id: str, category_list: List[str]):
+
     query = """
     SELECT DISTINCT ON (style_id) style_id, embedding, cdn_url
-    FROM image_vector
-    WHERE style_id IN %s
+    FROM image_vector i
+    JOIN category_style c ON i.style_id = c.style_id
     """
     
-    df = pd.read_sql(query, conn, params=(tuple(style_id_list),))
+    # category_list가 비어있지 않은 경우에만 조건 추가
+    if category_list:
+        query += "WHERE ca.category_id IN %s\n"
+        params = (tuple(category_list),)
+    else:
+        # category_list가 비어있는 경우 mall_type_id로 필터링
+        query += "WHERE i.mall_type_id = %s\n"
+        params = (mall_type_id,)
+    
+    df = pd.read_sql(query, conn, params=params)
     
     embeddings = df['embedding'].apply(json.loads)
     vectors = np.array(embeddings.tolist(), dtype=np.float32)
@@ -43,10 +53,10 @@ def reduce_dimensions(vectors: np.ndarray, n_neighbors=10, min_dist=0.1, n_jobs=
     )
     return reducer.fit_transform(vectors)
 
-def cluster_and_reduce(style_id_list: List[str], n_clusters: int):
+def cluster_and_reduce(n_clusters: int, mall_type_id: str, category_list: List[str]):
     conn, tunnel = get_pg_connection()
     try:
-        vectors, style_ids, urls = fetch_embedding_list(conn, style_id_list)
+        vectors, style_ids, urls = fetch_embedding_list(conn, mall_type_id, category_list)
         logger.info(f"Number of vectors fetched: {len(vectors)}")
 
         clusters = perform_clustering(vectors, n_clusters)

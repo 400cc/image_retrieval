@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 class ClusteringRequest(BaseModel):
-    style_id_list: List[str]
+    mall_type_id: str
+    category_list: List[str]
     n_clusters: int
 
 
@@ -38,7 +39,7 @@ def allowed_file(filename):
 def process_clustering(request: ClusteringRequest):
     try:
         logger.info(f"Received clustering request: {request}")
-        data_points = cluster_and_reduce(request.style_id_list, request.n_clusters)
+        data_points = cluster_and_reduce(request.n_clusters, request.mall_type_id, request.category_list)
         return {"data_points": data_points}
     
     except Exception as e:
