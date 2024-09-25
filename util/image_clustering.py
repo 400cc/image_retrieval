@@ -21,7 +21,7 @@ def fetch_embedding_list(conn, mall_type_id: str, category_list: List[int]):
     
     # category_list가 비어있지 않은 경우에만 조건 추가
     if category_list:
-        query += "WHERE ca.category_id IN %s\n"
+        query += "WHERE c.category_id IN %s\n"
         params = (tuple(category_list),)
     else:
         # category_list가 비어있는 경우 mall_type_id로 필터링
