@@ -51,12 +51,12 @@ def build_filter(mall_type_id, image_feature, category_id_list):
     return query, params
 
 
-def find_similar_images(style_id_list, mall_type_id, categoryName, category_id_list, image_feature, offset=5):
+def find_similar_images(style_id_list, mall_type_id, category_name, category_id_list, image_feature, offset=5):
     conn_pg, tunnel = get_pg_connection()
     try:
         cursor = conn_pg.cursor()
-        query, params = build_filter(style_id_list, mall_type_id, image_feature, categoryName, category_id_list, offset)
-        logging.info("category : %s", categoryName)
+        query, params = build_filter(mall_type_id, image_feature, category_id_list)
+        logging.info("category : %s", category_name)
         # logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
         similar_images = cursor.fetchall()
