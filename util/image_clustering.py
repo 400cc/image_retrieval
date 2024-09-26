@@ -68,7 +68,7 @@ def cluster_and_reduce(n_clusters: int, mall_type_id: str, category_list: List[i
                 "x": float(vectors_2d[i, 0]),
                 "y": float(vectors_2d[i, 1]),
                 "cluster": int(clusters[i]),
-                "url": urls[i]   
+                "url": urls[i]
             }
             for i, style_id in enumerate(style_ids)
         ]

@@ -50,7 +50,7 @@ def process_clustering(request: ClusteringRequest):
 @app.post('/process/image')
 async def process_image(
     image_upload: UploadFile = File(...), 
-    category_name: str = Form(""),
+    category_name: str = Form("apparal"),
     offset: int = Form(5),
     category_id_list: str = Form(""),
     mall_type_id: str = Form(None)
@@ -84,7 +84,7 @@ async def process_image(
         # image_features_list = [feat.tolist() for feat in image_feature]
         
         # 로그 남기기
-        logging.info(f"Processed image: Input data: {category_name}, Image feature: {image_feature}")
+        # logging.info(f"Processed image: Input data: {category_name}, Image feature: {image_feature}")
         
         # 유사한 이미지 검색 및 반환
         similar_images = find_similar_images(mall_type_id, category_name, category_id_list, image_feature, offset)
