@@ -50,14 +50,13 @@ def build_filter(mall_type_id, image_feature, category_id_list):
     
     return query, params
 
-
 def find_similar_images(mall_type_id, category_name, category_id_list, image_feature, offset=5):
     conn_pg, tunnel = get_pg_connection()
     try:
         cursor = conn_pg.cursor()
         query, params = build_filter(mall_type_id, image_feature, category_id_list)
         logging.info("category : %s", category_name)
-        # logging.info("Executing query: %s with params: %s", query, params)
+        logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
         similar_images = cursor.fetchall()
         # 중복된 style_id 제거
