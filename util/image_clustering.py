@@ -25,7 +25,7 @@ def fetch_embedding_list(conn, mall_type_id: str, category_list: List[int]):
         params = (tuple(category_list),)
     else:
         # category_list가 비어있는 경우 mall_type_id로 필터링
-        query += "WHERE i.mall_type_id = %s\n"
+        query += "WHERE c.mall_type_id = %s\n"
         params = (mall_type_id,)
     
     df = pd.read_sql(query, conn, params=params)
