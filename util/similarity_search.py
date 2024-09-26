@@ -16,25 +16,28 @@ class ImageVector(Base):
     mall_type_id = Column(String(255))
     embedding = Column(Vector(768))
 
-def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
+def build_filter(mall_type_id, image_feature, category_id_list):
     query = """
     SELECT
-        cdn_url,
-        style_id,
-        mall_type_id,
-        embedding <=> %s::vector AS distance
+        i.cdn_url,
+        i.style_id,
+        i.mall_type_id,
+        i.embedding <=> %s::vector AS distance
     FROM
-        image_vector
+        image_vector i
     """
     
     conditions = []
     params = [image_feature]
     
-    if mall_type_id is not None and category != "apparel":
-        conditions.append("style_id IN %s")
-        params.append(tuple(style_id_list))
-    elif mall_type_id is not None and category == "apparel":
-        conditions.append("mall_type_id = %s") 
+    if mall_type_id is not None and category_id_list:
+        query += """
+        JOIN category_style c ON i.style_id = c.style_id
+        """
+        conditions.append("c.category_id IN %s")
+        params.append(tuple(category_id_list))
+    elif mall_type_id is not None and not category_id_list:
+        conditions.append("i.mall_type_id = %s") 
         params.append(mall_type_id)
 
     if conditions:
@@ -48,12 +51,12 @@ def build_filter(style_id_list, mall_type_id, image_feature, category, offset):
     return query, params
 
 
-def find_similar_images(style_id_list, mall_type_id, category, image_feature, offset=5):
+def find_similar_images(style_id_list, mall_type_id, categoryName, category_id_list, image_feature, offset=5):
     conn_pg, tunnel = get_pg_connection()
     try:
         cursor = conn_pg.cursor()
-        query, params = build_filter(style_id_list, mall_type_id, image_feature, category, offset)
-        logging.info("category : %s", category)
+        query, params = build_filter(style_id_list, mall_type_id, image_feature, categoryName, category_id_list, offset)
+        logging.info("category : %s", categoryName)
         # logging.info("Executing query: %s with params: %s", query, params)
         cursor.execute(query, params)
         similar_images = cursor.fetchall()
