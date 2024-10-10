@@ -2,6 +2,7 @@ import logging
 import json
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import MiniBatchKMeans
 import umap
 from typing import List
@@ -51,12 +52,16 @@ def cluster_and_reduce(style_id_list: List[str], n_clusters: int):
 
         clusters = perform_clustering(vectors, n_clusters)
         vectors_2d = reduce_dimensions(vectors)
+
+        # Min-Max Scaling 적용 (x, y 값을 0 ~ 1 범위로 스케일링)
+        scaler = MinMaxScaler()
+        vectors_2d_scaled = scaler.fit_transform(vectors_2d)
         
         data_points = [
             {
                 "style_id": style_id,
-                "x": float(vectors_2d[i, 0]),
-                "y": float(vectors_2d[i, 1]),
+                "x": float(vectors_2d_scaled[i, 0]), 
+                "y": float(vectors_2d_scaled[i, 1]),  
                 "cluster": int(clusters[i]),
                 "url": urls[i]   
             }
