@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 class ClusteringRequest(BaseModel):
-    style_id_list: List[str]
+    mall_type_id: str
+    category_list: List[int]
     n_clusters: int
 
 
@@ -38,7 +39,7 @@ def allowed_file(filename):
 def process_clustering(request: ClusteringRequest):
     try:
         logger.info(f"Received clustering request: {request}")
-        data_points = cluster_and_reduce(request.style_id_list, request.n_clusters)
+        data_points = cluster_and_reduce(request.n_clusters, request.mall_type_id, request.category_list)
         return {"data_points": data_points}
     
     except Exception as e:
@@ -49,12 +50,12 @@ def process_clustering(request: ClusteringRequest):
 @app.post('/process/image')
 async def process_image(
     image_upload: UploadFile = File(...), 
-    category: str = Form(""),
+    category_name: str = Form("apparal"),
     offset: int = Form(5),
-    style_id_list: str = Form(""),
+    category_id_list: str = Form(""),
     mall_type_id: str = Form(None)
 ):
-    style_id_list = json.loads(style_id_list)
+    category_id_list = json.loads(category_id_list)
     # 파일 확장자 검사
     if not allowed_file(image_upload.filename):
         raise HTTPException(status_code=415, detail="Unsupported file format")
@@ -64,7 +65,7 @@ async def process_image(
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
         translator = Translator()
-        translated_category = translator.translate(category, src='ko', dest='en').text
+        translated_category = translator.translate(category_name, src='ko', dest='en').text
         print(f'translated_category: {translated_category}')
         # 이미지 및 이미지 특징 처리
         segmented_image, image_feature = process_image_and_feature_by_app(image, translated_category)
@@ -83,10 +84,10 @@ async def process_image(
         # image_features_list = [feat.tolist() for feat in image_feature]
         
         # 로그 남기기
-        logging.info(f"Processed image: Input data: {category}, Image feature: {image_feature}")
+        # logging.info(f"Processed image: Input data: {category_name}, Image feature: {image_feature}")
         
         # 유사한 이미지 검색 및 반환
-        similar_images = find_similar_images(style_id_list, mall_type_id, category, image_feature, offset)
+        similar_images = find_similar_images(mall_type_id, category_name, category_id_list, image_feature, offset)
         
         logging.info(f"Similar images: {similar_images}")
         
