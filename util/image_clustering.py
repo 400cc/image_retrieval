@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def fetch_embedding_list(conn, mall_type_id: str, category_list: List[int]):
-
+    
     query = """
     SELECT DISTINCT ON (style_id) i.style_id, i.embedding, i.cdn_url
     FROM image_vector i
