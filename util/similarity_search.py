@@ -30,14 +30,25 @@ def build_filter(mall_type_id, image_feature, category_id_list):
     conditions = []
     params = [image_feature]
     
-    if mall_type_id is not None and category_id_list:
-        query += """
-        JOIN category_style cs ON i.style_id = cs.style_id
-        JOIN category cat ON cs.category_id = cat.category_id
-        JOIN category_closure cc ON cc.descendant_id = cat.category_id
-        """
+    # if mall_type_id is not None and category_id_list:
+    #     query += """
+    #     JOIN category_style cs ON i.style_id = cs.style_id
+    #     JOIN category cat ON cs.category_id = cat.category_id
+    #     JOIN category_closure cc ON cc.descendant_id = cat.category_id
+    #     """
         
-        conditions.append("cc.ancestor_id IN %s")
+    #     conditions.append("cc.ancestor_id IN %s")
+    #     params.append(tuple(category_id_list))
+    if mall_type_id is not None and category_id_list:
+        conditions.append("""
+        i.style_id IN (
+            SELECT cs.style_id
+            FROM category_style cs
+            JOIN category cat ON cs.category_id = cat.category_id
+            JOIN category_closure cc ON cc.descendant_id = cat.category_id
+            WHERE cc.ancestor_id IN %s
+        )
+        """)
         params.append(tuple(category_id_list))
     elif mall_type_id is not None and not category_id_list:
         conditions.append("i.mall_type_id = %s") 
