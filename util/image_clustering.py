@@ -17,17 +17,27 @@ def fetch_embedding_list(conn, mall_type_id: str, category_list: List[int]):
     query = """
     SELECT DISTINCT ON (style_id) i.style_id, i.embedding, i.cdn_url
     FROM image_vector i
-    JOIN category_style c ON i.style_id = c.style_id
     """
-    
+    params = []
+    conditions = []
     # category_list가 비어있지 않은 경우에만 조건 추가
     if category_list:
-        query += "WHERE c.category_id IN %s\n"
+        conditions.append("""
+        i.style_id IN (
+            SELECT cs.style_id
+            FROM category_style cs
+            JOIN category cat ON cs.category_id = cat.category_id
+            JOIN category_closure cc ON cc.descendant_id = cat.category_id
+            WHERE cc.ancestor_id IN %s
+        )
+        """)
         params = (tuple(category_list),)
     else:
-        # category_list가 비어있는 경우 mall_type_id로 필터링
-        query += "WHERE c.mall_type_id = %s\n"
-        params = (mall_type_id,)
+        conditions.append("i.mall_type_id = %s") 
+        params.append(mall_type_id)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
     
     df = pd.read_sql(query, conn, params=params)
     
