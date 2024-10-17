@@ -101,16 +101,16 @@ def mapping_translated_category(translated_dict):
     }
     return translated_category_hierarchy
 
-def load_cdn_urls():
-    conn = get_pg_connection()[0]
-    cursor = conn.cursor()
+def load_cdn_urls(conn_pg):
+    # conn = get_pg_connection()[0]
+    cursor = conn_pg.cursor()
     sql_query = """
         SELECT DISTINCT cdn_url
         FROM image_vector
     """
     cursor.execute(sql_query)
     cdn_urls = {cdn_url for (cdn_url,) in cursor.fetchall()}
-    conn.close()
+    conn_pg.close()
     return cdn_urls
 
 
@@ -145,7 +145,7 @@ def save_embeddings(mapped_dict):
     conn_pg, tunnel = get_pg_connection()
     conn_pg.autocommit = True
     cur = conn_pg.cursor()
-    existing_cdn_urls = load_cdn_urls()
+    existing_cdn_urls = load_cdn_urls(conn_pg)
 
     try:
         for i, cdn_url in enumerate(all_cdn_urls):
