@@ -15,7 +15,7 @@ def get_pg_connection():
         ssh_username=ssh_config['user'],
         ssh_private_key=ssh_config['private_key'],
         remote_bind_address=(pg_config['host'], pg_config['port']),
-        local_bind_address=('localhost', 5433)
+        local_bind_address=('localhost', 5432)
     )
     tunnel.start()
     
