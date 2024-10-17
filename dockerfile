@@ -49,6 +49,7 @@ COPY GroundingDINO/ GroundingDINO/
 COPY segment-anything/ segment-anything/
 COPY util/ util/
 COPY main.py .
+COPY vector_base_uploader.py .
 
 
 # 루트 디렉토리로 돌아가기
