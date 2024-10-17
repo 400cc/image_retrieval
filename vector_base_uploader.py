@@ -110,7 +110,7 @@ def load_cdn_urls(conn_pg):
     """
     cursor.execute(sql_query)
     cdn_urls = {cdn_url for (cdn_url,) in cursor.fetchall()}
-    conn_pg.close()
+    # conn_pg.close()
     return cdn_urls
 
 
