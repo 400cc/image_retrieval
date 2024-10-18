@@ -33,13 +33,63 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-    
-# 한국어 -> 영어 매핑 테이블 정의
-category_translation_map = {
+ 
+category_mapping_dict = {
+    '상의': 'Top',
+    '니트/스웨터': 'Knit/Sweater',
+    '후드 티셔츠': 'Hood T-Shirt',
+    '맨투맨/스웨트셔츠': 'Sweatshirt',
+    '긴소매 티셔츠': 'Long Sleeve T-Shirt',
+    '셔츠/블라우스': 'Shirt/Blouse',
+    '피케/카라 티셔츠': 'Pique/Collar T-Shirt',
+    '반소매 티셔츠': 'Short Sleeve T-Shirt',
+    '민소매 티셔츠': 'Sleeveless T-Shirt',
+    '스포츠 상의': 'Sports Top',
+    '기타 상의': 'Other Tops',
+    '아우터': 'Outerwear',
+    '후드 집업': 'Hood Zip-Up',
+    '블루종/MA-1': 'Blouson/MA-1',
+    '레더/라이더스 재킷': 'Leather/Riders Jacket',
+    '무스탕/퍼': 'Mustang/Fur',
+    '트러커 재킷': 'Trucker Jacket',
+    '슈트/블레이저 재킷': 'Suit/Blazer Jacket',
+    '카디건': 'Cardigan',
+    '아노락 재킷': 'Anorak Jacket',
+    '플리스/뽀글이': 'Fleece/Sherpa',
+    '트레이닝 재킷': 'Training Jacket',
+    '스타디움 재킷': 'Stadium Jacket',
+    '환절기 코트': 'Transitional Coat',
+    '겨울 싱글 코트': 'Winter Single Coat',
+    '겨울 더블 코트': 'Winter Double Coat',
+    '겨울 기타 코트': 'Other Winter Coat',
+    '롱패딩/롱헤비 아우터': 'Long Puffer/Heavy Outerwear',
+    '숏패딩 숏헤비 아우터': 'Short Puffer/Heavy Outerwear',
+    '패딩 베스트': 'Puffer Vest',
+    '베스트': 'Vest',
+    '사파리/헌팅 재킷': 'Safari/Hunting Jacket',
+    '나일론/코치 재킷': 'Nylon/Coach Jacket',
+    '기타 아우터': 'Other Outerwear',
+    '바지': 'Pants',
+    '데님 팬츠': 'Denim Pants',
+    '코튼 팬츠': 'Cotton Pants',
+    '슈트 팬츠/슬렉스': 'Suit Pants/Slacks',
+    '트레이닝/조거 팬츠': 'Training/Jogger Pants',
+    '숏 팬츠': 'Short Pants',
+    '레깅스': 'Leggings',
+    '점프 슈트/오버울': 'Jumpsuit/Overall',
+    '스포츠 하의': 'Sports Bottom',
+    '기타 바지': 'Other Pants',
+    '원피스': 'Dress',
+    '미니 원피스': 'Mini Dress',
+    '미디 원피스': 'Midi Dress',
+    '맥시 원피스': 'Maxi Dress',
+    '스커트': 'Skirt',
+    '미니스커트': 'Mini Skirt',
+    '미디스커트': 'Midi Skirt',
+    '롱스커트': 'Long Skirt',
     '여성': 'Women',
     '남성': 'Men',
     '의류': 'Clothing',
-    '아우터': 'Outerwear',
     '자켓': 'Jacket',
     '코트': 'Coat',
     '트렌치코트': 'Trench Coat',
@@ -49,8 +99,6 @@ category_translation_map = {
     '패딩': 'Padding',
     '레더': 'Leather',
     '퍼': 'Fur',
-    '베스트': 'Vest',
-    '원피스': 'Dress',
     '미니': 'Mini',
     '미디': 'Midi',
     '맥시': 'Maxi',
@@ -69,7 +117,6 @@ category_translation_map = {
     '풀오버': 'Pullover',
     '가디건': 'Cardigan',
     '캐시미어': 'Cashmere',
-    '스커트': 'Skirt',
     '롱': 'Long',
     '팬츠': 'Pants',
     '스트레이트': 'Straight',
@@ -80,13 +127,14 @@ category_translation_map = {
     '트레이닝/조거': 'Training/Jogger',
     '카고': 'Cargo',
     '쇼츠': 'Shorts',
-    '레깅스': 'Leggings',
     '데님': 'Denim',
     '스트레이트진': 'Straight Jeans',
     '보이프렌드진': 'Boyfriend Jeans',
     '부츠컷진': 'Bootcut Jeans',
+    '스키니진': 'Skinny Jeans',
     '크롭진': 'Cropped Jeans',
     '키즈어패럴': 'Kids Apparel',
+    '하의': 'Bottom',
     '라운지웨어': 'Loungewear',
     '파자마세트': 'Pajama Set',
     '파자마상의': 'Pajama Top',
@@ -100,31 +148,48 @@ category_translation_map = {
     '와이어브라': 'Wired Bra',
     '나시탑/캐미솔': 'Tank Top/Camisole',
     '팬티': 'Panties',
-    '블레이저': 'Blazer',
-    '무스탕': 'Mustang',
-    '피케': 'Pique',
-    '조거': 'Jogger',
     '드로즈': 'Drawers',
     '트렁크': 'Trunks',
-    '니트/스웨터': 'Knit/Sweater',
-    '맨투맨': 'Sweatshirt',
-    '긴소매': 'Long Sleeve',
-    '민소매': 'Sleeveless',
-    '블루종': 'Blouson',
-    '라이더스': 'Riders',
-    '플리스': 'Fleece',
-    '트러커': 'Trucker',
-    '슈트': 'Suit',
-    '슈트팬츠': 'Suit Pants',
+    '블레이저': 'Blazer',
+    '데님아우터': 'Denim Outerwear',
+    '무스탕': 'Mustang',
+    '카라': 'Collar',
+    '기타 겨울 코트': 'Other Winter Coat',
+    '트렌치 코트': 'Trench Coat',
+    '가디건/베스트': 'Cardigan/Vest',
+    '다운/패딩': 'Down/Padding',
+    '탑': 'Top',
+    '스웻셔츠': 'Sweatshirt',
+    '드레스': 'Dress',
+    '롱/맥시': 'Long/Maxi',
+    '펜슬': 'Pencil',
+    '플레어': 'Flare',
+    '캐주얼': 'Casual',
+    '포멀': 'Formal',
+    '루즈/테이퍼드': 'Loose/Tapered',
+    '슬림/스트레이트': 'Slim/Straight',
+    '조거/트랙': 'Jogger/Track',
+    '수트': 'Suit',
     '수트재킷': 'Suit Jacket',
-    '루즈': 'Loose',
-    '테이퍼드': 'Tapered',
-    '캡슐 컬렉션': 'Capsule Collection',
+    '수트팬츠': 'Suit Pants'
 }
 
+translator = Translator()
+
 # 카테고리 목록을 매핑하는 함수
-def translate_category(korean_category_list):
-    return [category_translation_map.get(category, category) for category in korean_category_list]
+def translate_category(category_list):
+    translated_list = []
+    
+    for category in category_list:
+        # 카테고리 매핑 딕셔너리에 있는 경우 매핑 사용
+        if category in category_mapping_dict:
+            translated_list.append(category_mapping_dict[category])
+        else:
+            # 매핑이 없는 경우 Translator를 사용해 번역
+            translated_category = translator.translate(category, src='ko', dest='en').text
+            translated_list.append(translated_category)
+    
+    return translated_list
 
 @app.post("/clustering")
 def process_clustering(request: ClusteringRequest):
@@ -155,11 +220,8 @@ async def process_image(
         # 이미지를 PIL Image로 변환
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
-        translator = Translator()
-        # translated_category = translator.translate(category_name, src='ko', dest='en').text
-        category_list = [category.strip() for category in category_name.split(',')]
-        translated_category_list = translate_category(category_list)
-        translated_category = ', '.join(translated_category_list)
+        translated_category = translate_category(category_name)
+        
         print(f'translated_category: {translated_category}')
         
         # 이미지 및 이미지 특징 처리
