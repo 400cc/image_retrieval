@@ -95,6 +95,14 @@ cd image_retrieval
 
 <br>
 
+mysql_config.json 파일을 아래 형식으로 image_retrieval 하위에 작성합니다.
+![alt text](assets/image_mysql_config.png)
+
+pg_config.json 파일을 아래 형식으로 image_retrieval 하위에 작성합니다.
+![alt text](assets/image_pg_config.png)
+
+<br>
+
 ### dockerfile.api
 이미지 검색 및 클러스터링 api 를 위한 dockerfile입니다. 아래와 같이 빌드 후 컨테이너를 생성하면 실행됩니다. 
 
