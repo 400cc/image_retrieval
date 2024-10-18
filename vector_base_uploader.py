@@ -56,29 +56,19 @@ def mapping_translated_category(translated_dict):
     return translated_category_hierarchy
 
 
-def fetch_cdn_urls(batch_size: int = 1000):
+def fetch_cdn_urls(batch_size: int = 1000, last_offset: int = 0):
     conn = get_db_connection(connection_pool)
     cursor = conn.cursor()
     
-    offset = 0
-    all_cdn_urls = []
-    while True:
-        query = f"SELECT url FROM image LIMIT {batch_size} OFFSET {offset}"
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        
-        if not rows:
-            break
-        
-        all_cdn_urls.extend([row[0] for row in rows])
-        offset += batch_size
-        
-    print(f"{offset}개의 URL을 불러왔습니다.")
+    query = f"SELECT url FROM image LIMIT {batch_size} OFFSET {last_offset}"
+    cursor.execute(query)
+    rows = cursor.fetchall()
     
     cursor.close()
     conn.close()
     
-    return all_cdn_urls
+    # URL 리스트와 다음 오프셋을 반환
+    return [row[0] for row in rows], last_offset + len(rows)
 
 
 def translate_category_names(category_names):
@@ -136,11 +126,11 @@ def process_categories(mall_type, categories):
     return final_category  
 
 
-def save_embeddings(mapped_dict):
+def save_embeddings(cdn_urls, mapped_dict):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
-    all_cdn_urls = fetch_cdn_urls()
-    all_cdn_urls.reverse()
+    # all_cdn_urls = fetch_cdn_urls()
+    # all_cdn_urls.reverse()
     
     conn_pg, tunnel = get_pg_connection()
     conn_pg.autocommit = True
@@ -148,11 +138,15 @@ def save_embeddings(mapped_dict):
     existing_cdn_urls = load_cdn_urls(conn_pg)
 
     try:
-        for i, cdn_url in enumerate(all_cdn_urls):
+        for i, cdn_url in enumerate(cdn_urls):
             if cdn_url not in existing_cdn_urls:
                 parts = cdn_url.split('/')
                 style_id = parts[-2]
                 mall_type_name = parts[-3]
+                
+                if mall_type_name == 'wconcept_site':
+                    mall_type_name = 'wconcept'
+                
                 mall_type_id = mall_type_mapping_dict[mall_type_name]
                 
                 # mapping_dict에서 style_id에 해당하는 category를 찾기
@@ -167,8 +161,7 @@ def save_embeddings(mapped_dict):
                     vec = process_image_and_feature(cdn_url, category)
                 except Exception as e:
                     print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
-                    # print("An error occurred:")
-                    # traceback.print_exc()
+
                     continue
                 data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
                 print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
@@ -181,12 +174,12 @@ def save_embeddings(mapped_dict):
                     """, data_to_insert)
                     conn_pg.commit()
                     print('100개 아이템 데이터베이스에 삽입 완료')
-                    gc.collect()
                     data_to_insert = []
+                    gc.collect()
 
         if data_to_insert:
             psycopg2.extras.execute_batch(cur, """
-                INSERT INTO image_vector (style_id, category, embedding, cdn_url) 
+                INSERT INTO image_vector (style_id, cdn_url, mall_type_id, embedding) 
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (cdn_url) DO NOTHING
             """, data_to_insert)
@@ -204,4 +197,17 @@ if __name__ == '__main__':
     print('category translation') 
     mapped_dict = mapping_translated_category(translated_dict)
     print('category mapping')
-    save_embeddings(mapped_dict)
+    
+    offset = 0
+    batch_number = 0
+    batch_size = 1000
+    while True:
+        cdn_urls, offset = fetch_cdn_urls(batch_size, offset)
+        print(f"Processing batch {batch_number} with URLs starting from offset {offset - len(cdn_urls)}")
+        batch_number += 1
+        if not cdn_urls:
+            break
+        save_embeddings(cdn_urls, mapped_dict)
+        
+        del cdn_urls
+        gc.collect()
