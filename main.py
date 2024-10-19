@@ -177,8 +177,9 @@ category_mapping_dict = {
 translator = Translator()
 
 # 카테고리 목록을 매핑하는 함수
-def translate_category(category_list):
+def translate_category(category_name):
     translated_list = []
+    category_list = category_name.split(",")
     
     for category in category_list:
         # 카테고리 매핑 딕셔너리에 있는 경우 매핑 사용
@@ -206,7 +207,7 @@ def process_clustering(request: ClusteringRequest):
 @app.post('/process/image')
 async def process_image(
     image_upload: UploadFile = File(...), 
-    category_name: str = Form("apparal"),
+    category_name: str = Form("apparel"),
     offset: int = Form(5),
     category_id_list: str = Form(""),
     mall_type_id: str = Form(None)
