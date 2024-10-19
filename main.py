@@ -221,8 +221,8 @@ async def process_image(
         # 이미지를 PIL Image로 변환
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
-        translated_category = translate_category(category_name)
-        
+        translated_categories = translate_category(category_name)
+        translated_category = ",".join(translated_categories)
         print(f'translated_category: {translated_category}')
         
         # 이미지 및 이미지 특징 처리
