@@ -35,7 +35,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
  
 category_mapping_dict = {
-    '상의': 'Top',
+    '상의': 'Top Wear',
     '니트/스웨터': 'Knit/Sweater',
     '후드 티셔츠': 'Hood T-Shirt',
     '맨투맨/스웨트셔츠': 'Sweatshirt',
@@ -134,7 +134,7 @@ category_mapping_dict = {
     '스키니진': 'Skinny Jeans',
     '크롭진': 'Cropped Jeans',
     '키즈어패럴': 'Kids Apparel',
-    '하의': 'Bottom',
+    '하의': 'Bottom Wear',
     '라운지웨어': 'Loungewear',
     '파자마세트': 'Pajama Set',
     '파자마상의': 'Pajama Top',
