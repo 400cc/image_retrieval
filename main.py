@@ -35,12 +35,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-           
-def get_args_parser():
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--device', type=str, default='cuda:0', help='# of gpu') 
-    
-    return parser
+
  
 category_mapping_dict = {
     '상의': 'Top Wear',
