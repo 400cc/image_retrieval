@@ -9,7 +9,8 @@ import base64
 import logging
 from googletrans import Translator
 import os
-
+import torch
+from contextlib import asynccontextmanager
 from pydantic import BaseModel
 
 from util.image_clustering import cluster_and_reduce
@@ -21,6 +22,33 @@ app = FastAPI()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# GPU 준비 상태를 위해 전역 변수로 embedding 객체를 미리 정의
+embedding = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global embedding
+    device = os.getenv("device", "cuda:0")
+    
+    # 서버 시작 시 GPU를 초기화
+    if torch.cuda.is_available():
+        logger.info("Initializing GPU with a small tensor...")
+        small_tensor = torch.randn(1, 3, 224, 224).to(device)  # 작은 텐서를 GPU로 올림
+        embedding = extractImageFeature(device=device)
+        logger.info(f"GPU initialized and ready with device: {device}")
+    else:
+        logger.warning("CUDA is not available. Running on CPU.")
+        embedding = extractImageFeature(device='cpu')
+    
+    # 애플리케이션 시작
+    yield
+    
+    # 서버 종료 시 로그 기록 (필요에 따라 종료 작업 수행)
+    logger.info("Shutting down application...")
+
+# lifespan 핸들러를 app에 추가
+app.router.lifespan_context = lifespan
 
 
 class ClusteringRequest(BaseModel):
@@ -178,6 +206,7 @@ category_mapping_dict = {
 }
 
 translator = Translator()
+        
 
 # 카테고리 목록을 매핑하는 함수
 def translate_category(category_name):
