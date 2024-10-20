@@ -89,7 +89,7 @@ class extractImageFeature:
             caption=text_prompt,
             box_threshold=box_threshold,
             text_threshold=text_threshold,
-            device=self.DEVICE
+            device=self.device
         )
         
         return boxes
@@ -145,7 +145,7 @@ class extractImageFeature:
 
     def image_encoding(self, sam_image_result):
         with torch.no_grad():
-            preprocessed_image = self.preprocess(sam_image_result).unsqueeze(0).to(self.DEVICE)
+            preprocessed_image = self.preprocess(sam_image_result).unsqueeze(0).to(self.device)
             image_feature =self.model.encode_image(preprocessed_image)
             image_feature = image_feature[0].cpu().numpy().tolist()
             return image_feature
