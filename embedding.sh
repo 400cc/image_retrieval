@@ -1,4 +1,4 @@
 #!/bin/bash
 
-python3 vector_Base_uploader.py \
+python3 vector_base_uploader.py \
     --device cuda:0 \
