@@ -6,14 +6,21 @@ from typing import List
 from psycopg2 import extras
 import paramiko
 from sshtunnel import SSHTunnelForwarder
-from util.extract_image_feature import process_image_and_feature
+# from util.extract_image_feature import process_image_and_feature
+from util.extract_image_feature import extractImageFeature
 from util.mysql_db_util import get_db_connection, create_connection_pool
 from load_category_hierarchy import get_category_hierarchy, load_category_hierarchy
-import traceback
+import argparse
 import gc
 from util.pg_db_util import get_pg_connection
 config_path = 'util/mysql_config.json'
 connection_pool = create_connection_pool(config_path)
+
+def get_args_parser():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--device', type=str, default='cuda:0', help='# of gpu') 
+    
+    return parser
 
 category_mapping_dict = {
     '상의': 'Top Wear',
@@ -299,7 +306,7 @@ def process_categories(mall_type, categories):
     return final_category  
 
 
-def save_embeddings(cdn_urls, mapped_dict):
+def save_embeddings(cdn_urls, mapped_dict, embedding):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
     # all_cdn_urls = fetch_cdn_urls()
@@ -331,7 +338,7 @@ def save_embeddings(cdn_urls, mapped_dict):
                 category = process_categories(mall_type_name, categories)
                 
                 try:
-                    vec = process_image_and_feature(cdn_url, category)
+                    vec = embedding.process_image_and_feature(cdn_url, category, device)
                 except Exception as e:
                     print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
 
@@ -364,6 +371,11 @@ def save_embeddings(cdn_urls, mapped_dict):
         tunnel.close()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser('Image Embedding', parents=[get_args_parser()])
+    opts = parser.parse_args()
+    device = opts.device
+    embedding = extractImageFeature(device=device)
+    
     category_names = load_category_names()
     # print('category load')
     # translated_dict = translate_category_name(category_names)
@@ -380,7 +392,7 @@ if __name__ == '__main__':
         batch_number += 1
         if not cdn_urls:
             break
-        save_embeddings(cdn_urls, mapped_dict)
+        save_embeddings(cdn_urls, mapped_dict, embedding)
         
         del cdn_urls
         gc.collect()
