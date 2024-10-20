@@ -146,7 +146,7 @@ category_mapping_dict = {
     '트렌치 코트': 'Trench Coat',
     '가디건/베스트': 'Cardigan/Vest',
     '다운/패딩': 'Down/Padding',
-    '탑': 'Top',
+    '탑': 'Top Wear',
     '스웻셔츠': 'Sweatshirt',
     '드레스': 'Dress',
     '롱/맥시': 'Long/Maxi',

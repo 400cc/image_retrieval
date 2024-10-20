@@ -8,11 +8,13 @@ import json
 import base64
 import logging
 from googletrans import Translator
+import argparse
 
 from pydantic import BaseModel
 
 from util.image_clustering import cluster_and_reduce
-from util.extract_image_feature import process_image_and_feature_by_app
+# from util.extract_image_feature import process_image_and_feature_by_app
+from util.extract_image_feature import extractImageFeature
 from util.similarity_search import find_similar_images
 
 app = FastAPI()
@@ -33,6 +35,12 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           
+def get_args_parser():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--device', type=str, default='cuda:0', help='# of gpu') 
+    
+    return parser
  
 category_mapping_dict = {
     '상의': 'Top Wear',
@@ -158,7 +166,7 @@ category_mapping_dict = {
     '트렌치 코트': 'Trench Coat',
     '가디건/베스트': 'Cardigan/Vest',
     '다운/패딩': 'Down/Padding',
-    '탑': 'Top',
+    '탑': 'Top Wear',
     '스웻셔츠': 'Sweatshirt',
     '드레스': 'Dress',
     '롱/맥시': 'Long/Maxi',
@@ -217,6 +225,11 @@ async def process_image(
         raise HTTPException(status_code=415, detail="Unsupported file format")
 
     try:
+        parser = argparse.ArgumentParser('Image Embedding', parents=[get_args_parser()])
+        opts = parser.parse_args()
+        device = opts.device
+        embedding = extractImageFeature(device=device)
+        
         # 이미지를 PIL Image로 변환
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
@@ -225,7 +238,7 @@ async def process_image(
         print(f'translated_category: {translated_category}')
         
         # 이미지 및 이미지 특징 처리
-        segmented_image, image_feature = process_image_and_feature_by_app(image, translated_category)
+        segmented_image, image_feature = embedding.process_image_and_feature_by_app(image, translated_category)
         
         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
         # original_image_byte_array = io.BytesIO()
