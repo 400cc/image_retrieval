@@ -179,8 +179,7 @@ translator = Translator()
 # 카테고리 목록을 매핑하는 함수
 def translate_category(category_name):
     translated_list = []
-    category_list = category_name.split(",")
-    
+    category_list = [category.strip().strip('"') for category in category_name.split(",")]
     for category in category_list:
         # 카테고리 매핑 딕셔너리에 있는 경우 매핑 사용
         if category in category_mapping_dict:
