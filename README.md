@@ -67,21 +67,40 @@ wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
 ![alt text](assets/image-5.png)
 
+### image_retrieval.sh 파일 수정
+```
+#!/bin/bash
 
+export device="cuda:0"
+
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+위 device 환경변수 값에 사용할 gpu를 입력합니다.
+
+<br>
 
 ### API 실행
-다음과 같은 코드로 FastAPI를 실행합니다.
+다음과 같은 코드로 sh파일을 실행합니다.
 ```
-uvicorn main:app
+./image_retrieval.sh
 ```
 
 <br>
 
 
-####  vector_base_uploader.py
-현재 cdn에 저장된 이미지들을 불러와서 GroundedSAM -> Embedding -> DB에 삽입하는 파일입니다. 아래처럼 실행해주시면 됩니다.
+####  vector_base_uploader.py 실행
+현재 cdn에 저장된 이미지들을 불러와서 GroundedSAM -> Embedding -> DB에 삽입하는 파일입니다. embedding.sh 파일에서 device 값에 사용할 gpu를 설정 해 줍니다.
 ```
-python vector_base_uploader.py
+#!/bin/bash
+
+python3 vector_base_uploader.py \
+    --device cuda:0 \
+```
+
+그 후 sh 파일을 실행합니다.
+
+```
+./embedding.sh
 ```
 
 <br><br>
@@ -100,6 +119,29 @@ mysql_config.json 파일을 아래 형식으로 image_retrieval 하위에 작성
 
 pg_config.json 파일을 아래 형식으로 image_retrieval 하위에 작성합니다.
 ![alt text](assets/image_pg_config.png)
+
+<br>
+
+### image_retrieval.sh 파일 수정
+```
+#!/bin/bash
+
+export device="cuda:0"
+
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+위 device 환경변수 값에 사용할 gpu를 입력합니다.
+
+<br>
+
+### embedding.sh 파일 수정
+```
+#!/bin/bash
+
+python3 vector_base_uploader.py \
+    --device cuda:0 \
+```
+device 값에 사용할 gpu를 설정 해 줍니다.
 
 <br>
 
