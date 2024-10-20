@@ -8,7 +8,7 @@ import json
 import base64
 import logging
 from googletrans import Translator
-import argparse
+import os
 
 from pydantic import BaseModel
 
@@ -225,9 +225,7 @@ async def process_image(
         raise HTTPException(status_code=415, detail="Unsupported file format")
 
     try:
-        parser = argparse.ArgumentParser('Image Embedding', parents=[get_args_parser()])
-        opts = parser.parse_args()
-        device = opts.device
+        device = os.getenv("device", "cuda:0")
         embedding = extractImageFeature(device=device)
         
         # 이미지를 PIL Image로 변환
