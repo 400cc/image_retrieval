@@ -338,7 +338,7 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
                 category = process_categories(mall_type_name, categories)
                 
                 try:
-                    vec = embedding.process_image_and_feature(cdn_url, category, device)
+                    vec = embedding.process_image_and_feature(cdn_url, category)
                 except Exception as e:
                     print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
 
