@@ -60,20 +60,20 @@ def load_category_names():
         
 #     return translated_dict
 
-def translate_category(category_name):
-    translated_list = []
-    translator = Translator()
-    category_mapping_dict = load_category_mapping()
-    for category in category_name:
-        # 카테고리 매핑 딕셔너리에 있는 경우 매핑 사용
-        if category in category_mapping_dict:
-            translated_list.append(category_mapping_dict[category])
-        else: 
-            # 매핑이 없는 경우 Translator를 사용해 번역
-            translated_category = translator.translate(category, src='ko', dest='en').text
-            translated_list.append(translated_category)
+# def translate_category(category_name):
+#     translated_list = []
+#     translator = Translator()
+#     category_mapping_dict = load_category_mapping()
+#     for category in category_name:
+#         # 카테고리 매핑 딕셔너리에 있는 경우 매핑 사용
+#         if category in category_mapping_dict:
+#             translated_list.append(category_mapping_dict[category])
+#         else: 
+#             # 매핑이 없는 경우 Translator를 사용해 번역
+#             translated_category = translator.translate(category, src='ko', dest='en').text
+#             translated_list.append(translated_category)
      
-    return translated_list
+#     return translated_list
 
 def mapping_translated_category(translated_dict):
     translator = Translator()
