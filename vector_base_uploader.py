@@ -177,8 +177,6 @@ def process_categories(mall_type, categories):
 def save_embeddings(cdn_urls, mapped_dict, embedding):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
-    # all_cdn_urls = fetch_cdn_urls()
-    # all_cdn_urls.reverse()
     
     conn_pg, tunnel = get_pg_connection()
     conn_pg.autocommit = True
@@ -233,7 +231,10 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
             """, data_to_insert)
             conn_pg.commit()
             print('잔여 데이터 데이터베이스에 삽입 완료')
+            
     finally:
+        del cdn_urls
+        gc.collect()
         cur.close()
         conn_pg.close()
         tunnel.close()
