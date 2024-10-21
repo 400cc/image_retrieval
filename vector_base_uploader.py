@@ -48,32 +48,6 @@ def load_category_names():
     conn.close()
     return category_names
 
-# def translate_category_name(category_names):
-#     # 번역기 객체 생성
-#     translator = Translator()
-
-#     # 한글을 영어로 번역하여 딕셔너리 생성
-#     translated_dict = {}
-#     for name in category_names:
-#         result = translator.translate(name, src='ko', dest='en')
-#         translated_dict[name] = result.text
-        
-#     return translated_dict
-
-# def translate_category(category_name):
-#     translated_list = []
-#     translator = Translator()
-#     category_mapping_dict = load_category_mapping()
-#     for category in category_name:
-#         # 카테고리 매핑 딕셔너리에 있는 경우 매핑 사용
-#         if category in category_mapping_dict:
-#             translated_list.append(category_mapping_dict[category])
-#         else: 
-#             # 매핑이 없는 경우 Translator를 사용해 번역
-#             translated_category = translator.translate(category, src='ko', dest='en').text
-#             translated_list.append(translated_category)
-     
-#     return translated_list
 
 def mapping_translated_category(translated_dict):
     translator = Translator()
@@ -119,18 +93,6 @@ def fetch_cdn_urls(batch_size: int = 1000, last_offset: int = 0):
     return [row[0] for row in rows], last_offset + len(rows)
 
 
-# def translate_category_names(category_names):
-#     translator = Translator()
-#     translated_dict = {}
-#     for name in category_names:
-#         try:
-#             result = translator.translate(name, src='ko', dest='en')
-#             translated_dict[name] = result.text
-#         except Exception as e:
-#             print(f"Error translating {name}: {e}")
-#             translated_dict[name] = name
-#     return translated_dict
-
 def mapping_translated_category(translated_dict):
     category_hierarchy = load_category_hierarchy()
     translated_category_hierarchy = {
@@ -140,7 +102,6 @@ def mapping_translated_category(translated_dict):
     return translated_category_hierarchy
 
 def load_cdn_urls(conn_pg):
-    # conn = get_pg_connection()[0]
     cursor = conn_pg.cursor()
     sql_query = """
         SELECT DISTINCT cdn_url
@@ -148,7 +109,6 @@ def load_cdn_urls(conn_pg):
     """
     cursor.execute(sql_query)
     cdn_urls = {cdn_url for (cdn_url,) in cursor.fetchall()}
-    # conn_pg.close()
     return cdn_urls
 
 
@@ -197,9 +157,6 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
                 
                 # mapping_dict에서 style_id에 해당하는 category를 찾기
                 categories = mapped_dict.get(style_id, [])
-               
-                # category = ', '.join([' '.join(sublist) for sublist in categories])
-                # mall type에 따라 categories 처리 방식 변경
                 
                 category = process_categories(mall_type_name, categories)
                 
@@ -247,9 +204,6 @@ if __name__ == '__main__':
     category_mapping_dict = load_category_mapping()
     
     category_names = load_category_names()
-    # print('category load')
-    # translated_dict = translate_category_name(category_names)
-    # print('category translation') 
     mapped_dict = mapping_translated_category(category_mapping_dict)
     print('category mapping')
     
