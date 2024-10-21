@@ -7,6 +7,7 @@ from psycopg2 import extras
 import paramiko
 from sshtunnel import SSHTunnelForwarder
 import json
+import torch
 # from util.extract_image_feature import process_image_and_feature
 from util.extract_image_feature import extractImageFeature
 from util.mysql_db_util import get_db_connection, create_connection_pool
@@ -78,7 +79,7 @@ def mapping_translated_category(translated_dict):
     return translated_category_hierarchy
 
 
-def fetch_cdn_urls(batch_size: int = 1000, last_offset: int = 0):
+def fetch_cdn_urls(batch_size: int = 200, last_offset: int = 0):
     conn = get_db_connection(connection_pool)
     cursor = conn.cursor()
     
@@ -179,6 +180,7 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
                     print('100개 아이템 데이터베이스에 삽입 완료')
                     data_to_insert = []
                     gc.collect()
+                    torch.cuda.empty_cache()
 
         if data_to_insert:
             psycopg2.extras.execute_batch(cur, """
@@ -192,6 +194,7 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
     finally:
         del cdn_urls
         gc.collect()
+        torch.cuda.empty_cache()
         cur.close()
         conn_pg.close()
         tunnel.close()
@@ -209,7 +212,7 @@ if __name__ == '__main__':
     
     offset = 0
     batch_number = 0
-    batch_size = 1000
+    batch_size = 200
     while True:
         cdn_urls, offset = fetch_cdn_urls(batch_size, offset)
         print(f"Processing batch {batch_number} with URLs starting from offset {offset - len(cdn_urls)}")
@@ -220,3 +223,4 @@ if __name__ == '__main__':
         
         del cdn_urls
         gc.collect()
+        torch.cuda.empty_cache()
