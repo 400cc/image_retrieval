@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from pgvector.sqlalchemy import Vector
 import logging
+import time
 from util.pg_db_util import get_pg_connection
 
 
@@ -62,8 +63,16 @@ def find_similar_images(mall_type_id, category_name, category_id_list, image_fea
         query, params = build_filter(mall_type_id, image_feature, category_id_list)
         logging.info("category : %s", category_name)
         # logging.info("Executing query: %s with params: %s", query, params)
+
+        start_time = time.time()
         cursor.execute(query, params)
         similar_images = cursor.fetchall()
+
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        
+        print(f"유사 이미지 DB 쿼리 시간: {execution_time:.4f}초")
+
         # 중복된 style_id 제거
         seen_style_ids = set()
         results = []

@@ -115,25 +115,54 @@ async def process_image(
     start_time = time.time()
     
     category_id_list = json.loads(category_id_list)
+
+    end_time = time.time()
+    execution_time = (end_time - start_time)
+    print(f"카테고리 불러오기 실행 시간: {execution_time:.4f}초")
+
     # 파일 확장자 검사
     if not allowed_file(image_upload.filename):
         raise HTTPException(status_code=415, detail="Unsupported file format")
 
     try:
+        start_time = time.time()
         device = os.getenv("device", "cuda:0")
         logging.info(f"SELECTED DEVICE: {device}")
         embedding = extractImageFeature(device=device)
         
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        print(f"extractImageFeature 실행 시간: {execution_time:.4f}초")
+
+        start_time = time.time()
         # 이미지를 PIL Image로 변환
         image = Image.open(io.BytesIO(await image_upload.read())).convert("RGB")
         
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        print(f"이미지 PIL Image 변환 실행 시간: {execution_time:.4f}초")
+
+        start_time = time.time()
+
         translated_categories = translate_category(category_name)
         translated_category = ",".join(translated_categories)
         print(f'translated_category: {translated_category}')
-        
+
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        print(f"카테고리 번역 실행 시간: {execution_time:.4f}초")
+
+        start_time = time.time()
         # 이미지 및 이미지 특징 처리
         segmented_image, image_feature = embedding.process_image_and_feature_by_app(image, translated_category)
         
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        print(f"이미지 및 이미지 특징 처리 실행 시간: {execution_time:.4f}초")
+
+
+        start_time = time.time()
+
         # 원본 이미지 및 세그먼트된 이미지를 base64로 인코딩
         # original_image_byte_array = io.BytesIO()
         segmented_image_byte_array = io.BytesIO()
@@ -144,20 +173,25 @@ async def process_image(
         # original_image_base64 = base64.b64encode(original_image_byte_array.getvalue()).decode('utf-8')
         segmented_image_base64 = base64.b64encode(segmented_image_byte_array.getvalue()).decode('utf-8')
         
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        print(f"인코딩 및 저장 시간: {execution_time:.4f}초")
+
         # 이미지 특징을 JSON 형태로 반환
         # image_features_list = [feat.tolist() for feat in image_feature]
         
         # 로그 남기기
         # logging.info(f"Processed image: Input data: {category_name}, Image feature: {image_feature}")
         
+        start_time = time.time()
         # 유사한 이미지 검색 및 반환
         similar_images = find_similar_images(mall_type_id, category_name, category_id_list, image_feature, offset)
         
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        print(f"유사 이미지 검색 및 반환 시간: {execution_time:.4f}초")
         logging.info(f"Similar images: {similar_images}")
         
-        end_time = time.time()
-        processing_time = end_time - start_time
-        logging.info(f"Embedding Input Image Processing time: {processing_time:.2f} seconds")
         
         return JSONResponse(content={
             # "original_image": original_image_base64,
