@@ -10,6 +10,7 @@ import logging
 from googletrans import Translator
 import os
 import torch
+import time
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 
@@ -110,6 +111,9 @@ async def process_image(
     category_id_list: str = Form(""),
     mall_type_id: str = Form(None)
 ):
+    
+    start_time = time.time()
+    
     category_id_list = json.loads(category_id_list)
     # 파일 확장자 검사
     if not allowed_file(image_upload.filename):
@@ -150,6 +154,10 @@ async def process_image(
         similar_images = find_similar_images(mall_type_id, category_name, category_id_list, image_feature, offset)
         
         logging.info(f"Similar images: {similar_images}")
+        
+        end_time = time.time()
+        processing_time = end_time - start_time
+        logging.info(f"Embedding Input Image Processing time: {processing_time:.2f} seconds")
         
         return JSONResponse(content={
             # "original_image": original_image_base64,

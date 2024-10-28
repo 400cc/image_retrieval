@@ -101,9 +101,10 @@ class extractImageFeature:
         H, W, _ = image.shape
     
         if boxes.size(0) == 0:
-            print('whole box 생성')
-            full_image_box = torch.tensor([[0.0, 0.0, W, H]], dtype=torch.float32)  # [x1, y1, x2, y2]
-            boxes_xyxy = full_image_box
+            # print('whole box 생성')
+            # full_image_box = torch.tensor([[0.0, 0.0, W, H]], dtype=torch.float32)  # [x1, y1, x2, y2]
+            # boxes_xyxy = full_image_box
+            return image
         else:
             boxes_xyxy = box_ops.box_cxcywh_to_xyxy(boxes) * torch.Tensor([W, H, W, H])
 
