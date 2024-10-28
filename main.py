@@ -128,8 +128,8 @@ async def process_image(
         start_time = time.time()
         device = os.getenv("device", "cuda:0")
         logging.info(f"SELECTED DEVICE: {device}")
-        embedding = extractImageFeature(device=device)
-        
+        # embedding = extractImageFeature(device=device)
+        global embedding
         end_time = time.time()
         execution_time = (end_time - start_time)
         print(f"extractImageFeature 실행 시간: {execution_time:.4f}초")
