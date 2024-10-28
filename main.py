@@ -25,33 +25,34 @@ app = FastAPI()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+device = os.getenv("device", "cuda:0")
 
 # GPU 준비 상태를 위해 전역 변수로 embedding 객체를 미리 정의
-embedding = None
+embedding = extractImageFeature(device=device)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global embedding
-    device = os.getenv("device", "cuda:0")
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     global embedding
+#     device = os.getenv("device", "cuda:0")
     
-    # 서버 시작 시 GPU를 초기화
-    if torch.cuda.is_available():
-        logger.info("Initializing GPU with a small tensor...")
-        small_tensor = torch.randn(1, 3, 224, 224).to(device)  # 작은 텐서를 GPU로 올림
-        embedding = extractImageFeature(device=device)
-        logger.info(f"GPU initialized and ready with device: {device}")
-    else:
-        logger.warning("CUDA is not available. Running on CPU.")
-        embedding = extractImageFeature(device='cpu')
+#     # 서버 시작 시 GPU를 초기화
+#     if torch.cuda.is_available():
+#         logger.info("Initializing GPU with a small tensor...")
+#         small_tensor = torch.randn(1, 3, 224, 224).to(device)  # 작은 텐서를 GPU로 올림
+#         embedding = extractImageFeature(device=device)
+#         logger.info(f"GPU initialized and ready with device: {device}")
+#     else:
+#         logger.warning("CUDA is not available. Running on CPU.")
+#         embedding = extractImageFeature(device='cpu')
     
-    # 애플리케이션 시작
-    yield
+#     # 애플리케이션 시작
+#     yield
     
-    # 서버 종료 시 로그 기록 (필요에 따라 종료 작업 수행)
-    logger.info("Shutting down application...")
+#     # 서버 종료 시 로그 기록 (필요에 따라 종료 작업 수행)
+#     logger.info("Shutting down application...")
 
 # lifespan 핸들러를 app에 추가
-app.router.lifespan_context = lifespan
+# app.router.lifespan_context = lifespan
 
 
 class ClusteringRequest(BaseModel):
@@ -126,10 +127,10 @@ async def process_image(
 
     try:
         start_time = time.time()
-        device = os.getenv("device", "cuda:0")
+        
         logging.info(f"SELECTED DEVICE: {device}")
         # embedding = extractImageFeature(device=device)
-        global embedding
+        # global embedding
         end_time = time.time()
         execution_time = (end_time - start_time)
         print(f"extractImageFeature 실행 시간: {execution_time:.4f}초")
