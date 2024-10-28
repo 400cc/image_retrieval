@@ -117,6 +117,7 @@ async def process_image(
 
     try:
         device = os.getenv("device", "cuda:0")
+        logging.info(f"SELECTED DEVICE: {device}")
         embedding = extractImageFeature(device=device)
         
         # 이미지를 PIL Image로 변환
