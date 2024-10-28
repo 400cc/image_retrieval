@@ -64,22 +64,6 @@ class extractImageFeature:
         self.model, self.preprocess = clip.load('ViT-L/14', device=self.device)
     
 
-    # ckpt_repo_id = "ShilongLiu/GroundingDINO"
-    # ckpt_filenmae = "groundingdino_swinb_cogcoor.pth"
-    # ckpt_config_filename = "GroundingDINO_SwinB.cfg.py"
-
-    # groundingdino_model = load_model_hf(ckpt_repo_id, ckpt_filenmae, ckpt_config_filename)
-
-    # # DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    # # DEVICE = input("device: ")
-
-    # sam_checkpoint = 'sam_vit_h_4b8939.pth'
-    # sam = build_sam(checkpoint=sam_checkpoint)
-    # sam.to(device=DEVICE)
-    # sam_predictor = SamPredictor(sam)
-
-    # model, preprocess = clip.load('ViT-L/14', device=DEVICE)
-
     # grounding DINO로 box detection
     def detect(self, image, text_prompt, model, image_source, box_threshold = 0.3, text_threshold = 0.25):
 
