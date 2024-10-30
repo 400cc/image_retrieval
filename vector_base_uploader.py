@@ -142,11 +142,11 @@ def process_categories(mall_type, categories):
     return final_category  
 
 
-def save_embeddings(cdn_urls, mapped_dict, embedding):
+def save_embeddings(conn_pg, cdn_urls, mapped_dict, embedding):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
     
-    conn_pg, tunnel = get_pg_connection()
+    # conn_pg, tunnel = get_pg_connection()
     conn_pg.autocommit = True
     cur = conn_pg.cursor()
     existing_cdn_urls = load_cdn_urls(conn_pg)
@@ -203,8 +203,8 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
         gc.collect()
         torch.cuda.empty_cache()
         cur.close()
-        conn_pg.close()
-        tunnel.close()
+        # conn_pg.close()
+        # tunnel.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Image Embedding', parents=[get_args_parser()])
@@ -228,7 +228,7 @@ if __name__ == '__main__':
             batch_number += 1
             if not cdn_urls:
                 break
-            save_embeddings(cdn_urls, mapped_dict, embedding)
+            save_embeddings(conn_pg, cdn_urls, mapped_dict, embedding)
             
             del cdn_urls
             gc.collect()
