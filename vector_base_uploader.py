@@ -79,39 +79,17 @@ def mapping_translated_category(translated_dict):
     return translated_category_hierarchy
 
 
-# def fetch_cdn_urls(batch_size: int = 200, last_offset: int = 0):
-#     conn = get_db_connection(connection_pool)
-#     cursor = conn.cursor()
-    
-#     query = f"SELECT url FROM image LIMIT {batch_size} OFFSET {last_offset}"
-#     cursor.execute(query)
-#     rows = cursor.fetchall()
-    
-#     cursor.close()
-#     conn.close()
-    
-#     # URL 리스트와 다음 오프셋을 반환
-#     return [row[0] for row in rows], last_offset + len(rows)
-
-def fetch_cdn_urls(existing_urls, batch_size: int = 200, last_offset: int = 0):
+def fetch_cdn_urls(batch_size: int = 200, last_offset: int = 0):
     conn = get_db_connection(connection_pool)
     cursor = conn.cursor()
-
-    # 튜플의 길이에 따른 적절한 플레이스홀더 생성
-    placeholders = ', '.join(['%s'] * len(existing_urls))
-
-    # SQL 쿼리를 수정하여 이미 존재하는 URL은 제외
-    query = f"""
-        SELECT url FROM image 
-        WHERE url NOT IN ({placeholders})
-        LIMIT {batch_size} OFFSET {last_offset}
-    """
-    cursor.execute(query, tuple(existing_urls))  # 튜플을 사용하여 파라미터 전달
+    
+    query = f"SELECT url FROM image LIMIT {batch_size} OFFSET {last_offset}"
+    cursor.execute(query)
     rows = cursor.fetchall()
-
+    
     cursor.close()
     conn.close()
-
+    
     # URL 리스트와 다음 오프셋을 반환
     return [row[0] for row in rows], last_offset + len(rows)
 
@@ -168,41 +146,41 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
 
     try:
         for i, cdn_url in enumerate(cdn_urls):
-            # if cdn_url not in existing_cdn_urls:
-            parts = cdn_url.split('/')
-            style_id = parts[-2]
-            mall_type_name = parts[-3]
-            
-            if mall_type_name == 'wconcept_site':
-                mall_type_name = 'wconcept'
-            
-            mall_type_id = mall_type_mapping_dict[mall_type_name]
-            
-            # mapping_dict에서 style_id에 해당하는 category를 찾기
-            categories = mapped_dict.get(style_id, [])
-            
-            category = process_categories(mall_type_name, categories)
-            
-            try:
-                vec = embedding.process_image_and_feature(cdn_url, category)
-            except Exception as e:
-                print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
+            if cdn_url not in existing_cdn_urls:
+                parts = cdn_url.split('/')
+                style_id = parts[-2]
+                mall_type_name = parts[-3]
+                
+                if mall_type_name == 'wconcept_site':
+                    mall_type_name = 'wconcept'
+                
+                mall_type_id = mall_type_mapping_dict[mall_type_name]
+                
+                # mapping_dict에서 style_id에 해당하는 category를 찾기
+                categories = mapped_dict.get(style_id, [])
+                
+                category = process_categories(mall_type_name, categories)
+                
+                try:
+                    vec = embedding.process_image_and_feature(cdn_url, category)
+                except Exception as e:
+                    print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
 
-                continue
-            data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
-            print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
+                    continue
+                data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
+                print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
 
-            if len(data_to_insert) >= 100:
-                psycopg2.extras.execute_batch(cur, """
-                    INSERT INTO image_vector (style_id, cdn_url, mall_type_id, embedding) 
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (cdn_url) DO NOTHING
-                """, data_to_insert)
-                conn_pg.commit()
-                print('100개 아이템 데이터베이스에 삽입 완료')
-                data_to_insert = []
-                gc.collect()
-                torch.cuda.empty_cache()
+                if len(data_to_insert) >= 100:
+                    psycopg2.extras.execute_batch(cur, """
+                        INSERT INTO image_vector (style_id, cdn_url, mall_type_id, embedding) 
+                        VALUES (%s, %s, %s, %s)
+                        ON CONFLICT (cdn_url) DO NOTHING
+                    """, data_to_insert)
+                    conn_pg.commit()
+                    print('100개 아이템 데이터베이스에 삽입 완료')
+                    data_to_insert = []
+                    gc.collect()
+                    torch.cuda.empty_cache()
 
         if data_to_insert:
             psycopg2.extras.execute_batch(cur, """
@@ -221,37 +199,7 @@ def save_embeddings(cdn_urls, mapped_dict, embedding):
         conn_pg.close()
         tunnel.close()
 
-# if __name__ == '__main__':
-#     parser = argparse.ArgumentParser('Image Embedding', parents=[get_args_parser()])
-#     opts = parser.parse_args()
-#     device = opts.device
-#     embedding = extractImageFeature(device=device)
-#     category_mapping_dict = load_category_mapping()
-    
-#     category_names = load_category_names()
-#     mapped_dict = mapping_translated_category(category_mapping_dict)
-#     print('category mapping')
-    
-#     offset = 0
-#     batch_number = 0
-#     batch_size = 200
-#     while True:
-#         cdn_urls, offset = fetch_cdn_urls(batch_size, offset)
-#         print(f"Processing batch {batch_number} with URLs starting from offset {offset - len(cdn_urls)}")
-#         batch_number += 1
-#         if not cdn_urls:
-#             break
-#         save_embeddings(cdn_urls, mapped_dict, embedding)
-        
-#         del cdn_urls
-#         gc.collect()
-#         torch.cuda.empty_cache()
-
-
-def main_process():
-    conn_pg, tunnel = get_pg_connection()
-    existing_cdn_urls = load_cdn_urls(conn_pg)  # 데이터베이스에서 이미 존재하는 URL 목록 로드
-
+if __name__ == '__main__':
     parser = argparse.ArgumentParser('Image Embedding', parents=[get_args_parser()])
     opts = parser.parse_args()
     device = opts.device
@@ -266,7 +214,7 @@ def main_process():
     batch_number = 0
     batch_size = 200
     while True:
-        cdn_urls, offset = fetch_cdn_urls(existing_cdn_urls, batch_size, offset)  # 수정된 함수 호출
+        cdn_urls, offset = fetch_cdn_urls(batch_size, offset)
         print(f"Processing batch {batch_number} with URLs starting from offset {offset - len(cdn_urls)}")
         batch_number += 1
         if not cdn_urls:
@@ -276,9 +224,3 @@ def main_process():
         del cdn_urls
         gc.collect()
         torch.cuda.empty_cache()
-
-    conn_pg.close()
-    tunnel.close()
-
-if __name__ == '__main__':
-    main_process()
