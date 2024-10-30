@@ -79,12 +79,19 @@ def mapping_translated_category(translated_dict):
     return translated_category_hierarchy
 
 
-def fetch_cdn_urls(batch_size: int = 200, last_offset: int = 0):
+def fetch_cdn_urls(conn_pg, batch_size: int = 200, last_offset: int = 0):
+    existing_cdn_urls = load_cdn_urls(conn_pg)  # 데이터베이스에서 기존 URL 로드
     conn = get_db_connection(connection_pool)
     cursor = conn.cursor()
     
-    query = f"SELECT url FROM image LIMIT {batch_size} OFFSET {last_offset}"
-    cursor.execute(query)
+    # 이미 존재하는 URL을 제외하고 새 URL만 조회
+    placeholders = ','.join(['%s'] * len(existing_cdn_urls))  # 쿼리에 맞는 placeholders 생성
+    query = f"""
+        SELECT url FROM image 
+        WHERE url NOT IN ({placeholders})
+        LIMIT {batch_size} OFFSET {last_offset}
+    """
+    cursor.execute(query, list(existing_cdn_urls))
     rows = cursor.fetchall()
     
     cursor.close()
@@ -209,18 +216,23 @@ if __name__ == '__main__':
     category_names = load_category_names()
     mapped_dict = mapping_translated_category(category_mapping_dict)
     print('category mapping')
-    
+
+    conn_pg, tunnel = get_pg_connection()  # PostgreSQL 연결 초기화
     offset = 0
     batch_number = 0
     batch_size = 200
-    while True:
-        cdn_urls, offset = fetch_cdn_urls(batch_size, offset)
-        print(f"Processing batch {batch_number} with URLs starting from offset {offset - len(cdn_urls)}")
-        batch_number += 1
-        if not cdn_urls:
-            break
-        save_embeddings(cdn_urls, mapped_dict, embedding)
-        
-        del cdn_urls
-        gc.collect()
-        torch.cuda.empty_cache()
+    try:
+        while True:
+            cdn_urls, offset = fetch_cdn_urls(conn_pg, batch_size, offset)
+            print(f"Processing batch {batch_number} with URLs starting from offset {offset - len(cdn_urls)}")
+            batch_number += 1
+            if not cdn_urls:
+                break
+            save_embeddings(cdn_urls, mapped_dict, embedding)
+            
+            del cdn_urls
+            gc.collect()
+            torch.cuda.empty_cache()
+    finally:
+        conn_pg.close()
+        tunnel.close()
