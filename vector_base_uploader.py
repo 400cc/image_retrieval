@@ -116,6 +116,7 @@ def load_cdn_urls(conn_pg):
         FROM image_vector
     """
     cursor.execute(sql_query)
+    cursor.close()
     cdn_urls = {cdn_url for (cdn_url,) in cursor.fetchall()}
     return cdn_urls
 
@@ -203,8 +204,7 @@ def save_embeddings(conn_pg, cdn_urls, mapped_dict, embedding):
         gc.collect()
         torch.cuda.empty_cache()
         cur.close()
-        # conn_pg.close()
-        # tunnel.close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Image Embedding', parents=[get_args_parser()])
