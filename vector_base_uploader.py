@@ -147,7 +147,7 @@ def save_embeddings(conn_pg, cdn_urls, mapped_dict, embedding):
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
     
     # conn_pg, tunnel = get_pg_connection()
-    conn_pg.autocommit = True
+    # conn_pg.autocommit = True
     cur = conn_pg.cursor()
     existing_cdn_urls = load_cdn_urls(conn_pg)
 
@@ -218,6 +218,7 @@ if __name__ == '__main__':
     print('category mapping')
 
     conn_pg, tunnel = get_pg_connection()  # PostgreSQL 연결 초기화
+    conn_pg.autocommit = True
     offset = 0
     batch_number = 0
     batch_size = 200
@@ -236,3 +237,7 @@ if __name__ == '__main__':
     finally:
         conn_pg.close()
         tunnel.close()
+        
+        
+        
+        
