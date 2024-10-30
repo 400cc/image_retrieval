@@ -96,19 +96,22 @@ def mapping_translated_category(translated_dict):
 def fetch_cdn_urls(existing_urls, batch_size: int = 200, last_offset: int = 0):
     conn = get_db_connection(connection_pool)
     cursor = conn.cursor()
-    
+
+    # 튜플의 길이에 따른 적절한 플레이스홀더 생성
+    placeholders = ', '.join(['%s'] * len(existing_urls))
+
     # SQL 쿼리를 수정하여 이미 존재하는 URL은 제외
     query = f"""
         SELECT url FROM image 
-        WHERE url NOT IN %s
+        WHERE url NOT IN ({placeholders})
         LIMIT {batch_size} OFFSET {last_offset}
     """
-    cursor.execute(query, (tuple(existing_urls),))
+    cursor.execute(query, tuple(existing_urls))  # 튜플을 사용하여 파라미터 전달
     rows = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
-    
+
     # URL 리스트와 다음 오프셋을 반환
     return [row[0] for row in rows], last_offset + len(rows)
 
