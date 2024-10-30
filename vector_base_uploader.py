@@ -147,48 +147,44 @@ def save_embeddings(conn_pg, cdn_urls, mapped_dict, embedding):
     data_to_insert = []
     mall_type_mapping_dict = {'musinsa': "JN1qnDZA", 'wconcept': "l8WAu4fP", 'handsome': "FHyETFQN"}
     
-    # conn_pg, tunnel = get_pg_connection()
-    # conn_pg.autocommit = True
     cur = conn_pg.cursor()
-    existing_cdn_urls = load_cdn_urls(conn_pg)
 
     try:
         for i, cdn_url in enumerate(cdn_urls):
-            if cdn_url not in existing_cdn_urls:
-                parts = cdn_url.split('/')
-                style_id = parts[-2]
-                mall_type_name = parts[-3]
-                
-                if mall_type_name == 'wconcept_site':
-                    mall_type_name = 'wconcept'
-                
-                mall_type_id = mall_type_mapping_dict[mall_type_name]
-                
-                # mapping_dict에서 style_id에 해당하는 category를 찾기
-                categories = mapped_dict.get(style_id, [])
-                
-                category = process_categories(mall_type_name, categories)
-                
-                try:
-                    vec = embedding.process_image_and_feature(cdn_url, category)
-                except Exception as e:
-                    print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
+            parts = cdn_url.split('/')
+            style_id = parts[-2]
+            mall_type_name = parts[-3]
+            
+            if mall_type_name == 'wconcept_site':
+                mall_type_name = 'wconcept'
+            
+            mall_type_id = mall_type_mapping_dict[mall_type_name]
+            
+            # mapping_dict에서 style_id에 해당하는 category를 찾기
+            categories = mapped_dict.get(style_id, [])
+            
+            category = process_categories(mall_type_name, categories)
+            
+            try:
+                vec = embedding.process_image_and_feature(cdn_url, category)
+            except Exception as e:
+                print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
 
-                    continue
-                data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
-                print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
+                continue
+            data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
+            print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
 
-                if len(data_to_insert) >= 100:
-                    psycopg2.extras.execute_batch(cur, """
-                        INSERT INTO image_vector (style_id, cdn_url, mall_type_id, embedding) 
-                        VALUES (%s, %s, %s, %s)
-                        ON CONFLICT (cdn_url) DO NOTHING
-                    """, data_to_insert)
-                    conn_pg.commit()
-                    print('100개 아이템 데이터베이스에 삽입 완료')
-                    data_to_insert = []
-                    gc.collect()
-                    torch.cuda.empty_cache()
+            if len(data_to_insert) >= 100:
+                psycopg2.extras.execute_batch(cur, """
+                    INSERT INTO image_vector (style_id, cdn_url, mall_type_id, embedding) 
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (cdn_url) DO NOTHING
+                """, data_to_insert)
+                conn_pg.commit()
+                print('100개 아이템 데이터베이스에 삽입 완료')
+                data_to_insert = []
+                gc.collect()
+                torch.cuda.empty_cache()
 
         if data_to_insert:
             psycopg2.extras.execute_batch(cur, """
