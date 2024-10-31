@@ -116,7 +116,7 @@ def load_cdn_urls(conn_pg):
         FROM image_vector
     """
     cursor.execute(sql_query)
-    cursor.close()
+
     cdn_urls = {cdn_url for (cdn_url,) in cursor.fetchall()}
     return cdn_urls
 
