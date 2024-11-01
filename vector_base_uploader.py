@@ -167,16 +167,13 @@ def save_embeddings(conn_pg, cdn_urls, mapped_dict, embedding):
             
             try:
                 vec = embedding.process_image_and_feature(cdn_url, category)
-            except IndexError as e:
+            except Exception as e:
                 if "selected index k out of range" in str(e):
                     print(f'Critical error: {e} - {cdn_url}, {i} 번째, category: {category}')
                     sys.exit(1)  # 프로그램을 에러와 함께 종료합니다.
                 else:
-                    print(f'Non-critical IndexError: {e} - {cdn_url}, {i} 번째, category: {category}')
+                    print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
                     continue
-            except Exception as e:
-                print(f'Error processing image: {e} - {cdn_url}, {i} 번째, category: {category}')
-                continue
             
             data_to_insert.append((style_id, cdn_url, mall_type_id, vec))
             print(f'category : {category}, {i}번째 완료, url: {cdn_url}')
