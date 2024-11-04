@@ -94,6 +94,9 @@ def fetch_cdn_urls(conn_pg, batch_size: int = 200, last_offset: int = 0):
     cursor.execute(query, list(existing_cdn_urls))
     rows = cursor.fetchall()
     
+    del existing_cdn_urls
+    gc.collect()
+    
     cursor.close()
     conn.close()
     
