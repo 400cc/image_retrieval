@@ -1,0 +1,12 @@
+*.pth
+*.pyc
+
+venv/
+.venv
+
+util/pg_config.json 
+util/mysql_config.json 
+
+dev/
+
+__pycache__

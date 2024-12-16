@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Search</title>
+    <style>
+        .image-container, .similar-images-container {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto; /* 가로로 스크롤 가능하게 설정 */
+            gap: 10px; /* 이미지 간의 간격 설정 */
+        }
+        .image-container img, .similar-images-container img {
+            width: 150px; /* 이미지 너비를 고정 */
+            height: auto; /* 비율을 유지하며 높이를 자동 조정 */
+        }
+        .container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Search</h1>
+    <form id="imageForm" action="/process_image" method="post" enctype="multipart/form-data">
+        <label for="image_upload">Upload Image:</label><br>
+        <input type="file" id="image_upload" name="image_upload"><br>
+        <label for="input_text">Input Text:</label><br>
+        <input type="text" id="input_text" name="input_data"><br><br>
+        <label for="top_num">Number of Similar Images:</label><br>
+        <input type="number" id="top_num" name="top_num" value="5"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+
+    <div class="container">
+        <h2>Original Image</h2>
+        <div id="originalImageContainer" class="image-container"></div>
+    </div>
+
+    <div class="container">
+        <h2>Segmented Image</h2>
+        <div id="segmentedImageContainer" class="image-container"></div>
+    </div>
+
+    <div class="container">
+        <h2>Similar Images</h2>
+        <div id="similarImagesContainer" class="similar-images-container"></div>
+    </div>
+
+    <script>
+        document.getElementById('imageForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let formData = new FormData();
+            formData.append('image_upload', document.getElementById('image_upload').files[0]);
+            formData.append('input_data', document.getElementById('input_text').value);
+            formData.append('top_num', document.getElementById('top_num').value);
+
+            fetch('/process_image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                // Clear previous images
+                document.getElementById('originalImageContainer').innerHTML = '';
+                document.getElementById('segmentedImageContainer').innerHTML = '';
+                document.getElementById('similarImagesContainer').innerHTML = '';
+
+                // Display the original image
+                if (data.original_image) {
+                    let originalImg = new Image();
+                    originalImg.src = 'data:image/png;base64,' + data.original_image;
+                    document.getElementById('originalImageContainer').appendChild(originalImg);
+                }
+
+                // Display the segmented image
+                if (data.segmented_condaimage) {
+                    let segmentedImg = new Image();
+                    segmentedImg.src = 'data:image/png;base64,' + data.segmented_condaimage;
+                    document.getElementById('segmentedImageContainer').appendChild(segmentedImg);
+                }
+
+                // Display similar images
+                if (data.similar_images) {
+                    data.similar_images.forEach(function(image) {
+                        let imgUrl = image;
+                        let img = new Image();
+                        img.src = imgUrl;
+                        document.getElementById('similarImagesContainer').appendChild(img);
+                    });
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

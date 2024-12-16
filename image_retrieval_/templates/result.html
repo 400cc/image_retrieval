@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clustering Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clustering Result</h1>
+        <form action="/clustering" method="post">
+            <label for="n_clusters">Number of Clusters (k):</label>
+            <input type="number" id="n_clusters" name="n_clusters" min="3" step="1" required>
+            <button type="submit">Submit</button>
+        </form>
+
+        {% if image %}
+            <h2>Clustering Visualization</h2>
+            <img src="data:image/png;base64,{{ image }}" alt="Clustering Visualization">
+        {% endif %}
+    </div>
+</body>
+</html>
